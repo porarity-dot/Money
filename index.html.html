@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global & Thai Stock DCA Portfolio Tracker</title>
+  <!-- Google Fonts: Inter & Prompt for Thai -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0b1120;
+      --bg-card: #151f32;
+      --bg-card-hover: #1c2a44;
+      --bg-input: #070b14;
+      --border-color: #24344d;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-blue-hover: #0284c7;
+      --accent-green: #34d399;
+      --accent-green-bg: rgba(52, 211, 153, 0.12);
+      --accent-red: #f87171;
+      --accent-red-bg: rgba(248, 113, 113, 0.12);
+      --accent-amber: #fbbf24;
+      --accent-purple: #a855f7;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .brand-title h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-title p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .badge-target {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Navigation Tabs */
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 4px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+
+    .tab-btn.active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+    }
+
+    .tab-content {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .tab-content.active {
+      display: flex;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #0b1120;
+    }
+    .btn-primary:hover {
+      background: #7dd3fc;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: #475569;
+    }
+
+    .btn-live {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .btn-live:hover {
+      background: rgba(52, 211, 153, 0.25);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .btn-danger-outline {
+      background: transparent;
+      color: var(--accent-red);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+    .btn-danger-outline:hover {
+      background: var(--accent-red-bg);
+    }
+
+    /* Top Summary Metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-blue);
+    }
+    .metric-card.success::before { background: var(--accent-green); }
+    .metric-card.warning::before { background: var(--accent-amber); }
+    .metric-card.purple::before { background: var(--accent-purple); }
+
+    .metric-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .metric-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .profit-positive {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+    .profit-negative {
+      color: var(--accent-red);
+      font-weight: 600;
+    }
+
+    /* Main Grid Layout */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 992px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Holdings Table */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+
+    th {
+      background: rgba(11, 17, 32, 0.7);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(36, 52, 77, 0.6);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .stock-tag {
+      font-weight: 700;
+      color: var(--accent-blue);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stock-tag span {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .market-badge {
+      display: inline-flex;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      width: fit-content;
+      margin-bottom: 2px;
+    }
+    .market-badge.us { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); }
+    .market-badge.th { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); }
+
+    .cost-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.12);
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-top: 2px;
+    }
+
+    /* Price inputs in table */
+    .price-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: #fff;
+      padding: 6px 8px;
+      width: 105px;
+      font-size: 0.85rem;
+      text-align: right;
+    }
+
+    .price-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    /* Goal Tracker Section */
+    .goal-box {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .progress-track {
+      background: #070b14;
+      border-radius: 999px;
+      height: 12px;
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #0284c7, #34d399);
+      height: 100%;
+      transition: width 0.5s ease;
+    }
+
+    .projection-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+
+    .projection-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(7, 11, 20, 0.5);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(36, 52, 77, 0.6);
+    }
+
+    .projection-item span:first-child {
+      color: var(--text-muted);
+    }
+
+    .projection-item span:last-child {
+      font-weight: 600;
+      color: var(--accent-green);
+    }
+
+    /* Advisor Page Styles */
+    .advisor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .option-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .option-card:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .option-card.selected {
+      border-color: var(--accent-blue);
+      background: #19263f;
+    }
+
+    .option-card.recommended {
+      border-color: var(--accent-green);
+    }
+    .option-card.recommended.selected {
+      background: #142a2b;
+      border-color: var(--accent-green);
+    }
+
+    .rec-badge {
+      position: absolute;
+      top: -10px;
+      right: 16px;
+      background: var(--accent-green);
+      color: #0b1120;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 999px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .option-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .option-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .allocation-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .alloc-pill {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .alloc-pill.green {
+      background: var(--accent-green-bg);
+      color: var(--accent-green);
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+    .alloc-pill.amber {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--accent-amber);
+      border-color: rgba(251, 191, 36, 0.25);
+    }
+
+    .option-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .option-pros-cons {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.8rem;
+      background: rgba(7, 11, 20, 0.4);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(36, 52, 77, 0.5);
+    }
+
+    .pro-item { color: var(--accent-green); }
+    .con-item { color: var(--accent-amber); }
+
+    /* Simulation Result Box */
+    .sim-box {
+      background: #111a2e;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sim-breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .sim-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sim-item-name {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .sim-item-val {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sim-item-pct {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+
+    /* S&P 500 Tab Styles */
+    .sp-filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+
+    .filter-btn.active {
+      background: var(--accent-blue);
+      color: #0b1120;
+      border-color: var(--accent-blue);
+    }
+
+    .sp-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .sp-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .sp-card:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sp-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .sp-ticker {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+
+    .sp-name {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .sp-sector-pill {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .sp-moat {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+      background: rgba(7, 11, 20, 0.4);
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(36, 52, 77, 0.5);
+    }
+
+    .sp-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .sp-metric-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sp-metric-label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    .sp-metric-val {
+      font-weight: 600;
+      color: #fff;
+    }
+    .sp-metric-val.green { color: var(--accent-green); }
+    .sp-metric-val.amber { color: var(--accent-amber); }
+
+    .sp-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    /* Modal / Form Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 540px;
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .form-control {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    /* FX input bar */
+    .fx-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(7, 11, 20, 0.5);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .fx-bar input {
+      width: 90px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: #fff;
+      padding: 5px 8px;
+      text-align: right;
+      font-weight: 600;
+    }
+
+    .status-pill {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="brand-title">
+        <h1>🌐 Global & Thai Stock DCA Portfolio Tracker</h1>
+        <p>บันทึกและวิเคราะห์พอร์ตการลงทุนทั้งตลาดโลก (US/Global) และตลาดไทย (SET) • วินัย 1,000 บาท/เดือน</p>
+      </div>
+      <div class="header-actions">
+        <span class="badge-target">🎯 เป้าหมายผลตอบแทน: ≥10% ต่อปี</span>
+        <button class="btn btn-live btn-sm" id="btnLiveFetch" onclick="fetchLivePricesFromWeb()">⚡ อัปเดตราคาตลาดสด</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportDataCSV()">📥 Export CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal()">➕ บันทึกรายการซื้อ DCA</button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-dashboard')">
+        <span>📊 สรุปพอร์ต & ประวัติการซื้อ</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-advisor')">
+        <span>🧠 วิเคราะห์ทางเลือก ตลาดนอก vs ตลาดไทย</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-sp500')">
+        <span>🏛 วิเคราะห์หุ้น S&P 500 ตัวไหนน่าลงทุน</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: DASHBOARD CONTENT -->
+    <div id="tab-dashboard" class="tab-content active">
+      
+      <!-- FX & Settings Bar -->
+      <div class="fx-bar">
+        <span>💱 <strong>อัตราแลกเปลี่ยน (USD/THB):</strong> 1 USD =</span>
+        <input type="number" id="fxRateInput" step="0.01" value="33.22" onchange="updateFxRate(this.value)">
+        <span>บาท</span>
+        <span id="priceStatusText" style="margin-left: auto; color: var(--accent-blue); font-size: 0.8rem;">
+          ● อัตราแลกเปลี่ยนต้นทุน: <strong>33.22 บาท/USD</strong> (หุ้นไทยคำนวณเป็นเงินบาทโดยตรง)
+        </span>
+      </div>
+
+      <!-- Summary Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">
+            <span>เงินต้นสะสมที่ลงทุน (Total Invested)</span>
+            <span>💰</span>
+          </div>
+          <div class="metric-value" id="totalInvested">฿0.00</div>
+          <div class="metric-sub" id="totalDcaRounds">0 รอบ DCA</div>
+        </div>
+
+        <div class="metric-card success">
+          <div class="metric-label">
+            <span>มูลค่าพอร์ตปัจจุบัน (Portfolio Value)</span>
+            <span>📈</span>
+          </div>
+          <div class="metric-value" id="portfolioValue">฿0.00</div>
+          <div class="metric-sub" id="portfolioValueUSD">$0.00 USD</div>
+        </div>
+
+        <div class="metric-card" id="profitCard">
+          <div class="metric-label">
+            <span>กำไร/ขาดทุนรวม (Total Profit/Loss)</span>
+            <span>🎯</span>
+          </div>
+          <div class="metric-value" id="totalProfit">฿0.00</div>
+          <div class="metric-sub" id="totalProfitPct">0.00%</div>
+        </div>
+
+        <div class="metric-card purple">
+          <div class="metric-label">
+            <span>เป้าหมาย DCA สะสมปีที่ 1</span>
+            <span>🏆</span>
+          </div>
+          <div class="metric-value" id="year1Target">฿12,670</div>
+          <div class="metric-sub" id="dcaProgressText">ความคืบหน้า 8.3% ของปีแรก</div>
+        </div>
+      </div>
+
+      <!-- Main Section: Holdings & Projections -->
+      <div class="dashboard-layout">
+        
+        <!-- Left Column: Holdings Summary -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>💼 หุ้นในพอร์ตและกำไรรายตัว (Global & Thai Holdings)</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="resetToMarketDefaults()">🔄 รีเซ็ตราคา</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ตลาด / หุ้น</th>
+                  <th style="text-align: right;">จำนวนหุ้น (Shares)</th>
+                  <th style="text-align: right;">ทุนรวม (THB)</th>
+                  <th style="text-align: right;">ต้นทุนต่อหุ้น (THB / สกุลเดิม)</th>
+                  <th style="text-align: right;">ราคาตลาดปัจจุบัน</th>
+                  <th style="text-align: right;">มูลค่าปัจจุบัน (THB)</th>
+                  <th style="text-align: right;">กำไร/ขาดทุน (THB)</th>
+                </tr>
+              </thead>
+              <tbody id="holdingsTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right Column: 10% Compounding Projection -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🚀 พลังผลตอบแทนทบต้น 10% ต่อปี</span>
+            </div>
+          </div>
+
+          <div class="goal-box">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
+                <span>ความคืบหน้าสะสมเงินออมปีที่ 1 (12,000 บาท)</span>
+                <span id="progressBarLabel" style="font-weight: 600; color: var(--accent-blue);">8.3%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="progressBarFill" style="width: 8.33%;"></div>
+              </div>
+            </div>
+
+            <div class="projection-list">
+              <div class="projection-item">
+                <span>📅 สิ้นปีที่ 1 (ทุน 1.2 หมื่น)</span>
+                <span>฿12,670 <small>(กำไร +670)</small></span>
+              </div>
+              <div class="projection-item">
+                <span>📅 สิ้นปีที่ 3 (ทุน 3.6 หมื่น)</span>
+                <span>฿41,780 <small>(กำไร +5,780)</small></span>
+              </div>
+              <div class="projection-item">
+                <span>📅 สิ้นปีที่ 5 (ทุน 6.0 หมื่น)</span>
+                <span>฿78,080 <small>(กำไร +18,080)</small></span>
+              </div>
+              <div class="projection-item">
+                <span>📅 สิ้นปีที่ 10 (ทุน 1.2 แสน)</span>
+                <span>฿206,550 <small>(กำไร +86,550)</small></span>
+              </div>
+              <div class="projection-item">
+                <span>📅 สิ้นปีที่ 20 (ทุน 2.4 แสน)</span>
+                <span>฿765,700 <small>(กำไร +525,700)</small></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Transaction History Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📜 ประวัติการบันทึกรายการซื้อ DCA (Transaction Ledger)</span>
+          </div>
+          <span class="status-pill" id="txCountBadge">2 รายการ</span>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>วันที่ทำรายการ</th>
+                <th>สัญลักษณ์</th>
+                <th>ประเภท</th>
+                <th style="text-align: right;">เงินลงทุน (THB)</th>
+                <th style="text-align: right;">จำนวนหุ้นที่ได้รับ</th>
+                <th style="text-align: right;">ต้นทุนต่อหุ้น</th>
+                <th>บันทึกช่วยจำ</th>
+                <th style="text-align: center;">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="txTableBody">
+              <!-- Dynamically generated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: ADVISOR CONTENT -->
+    <div id="tab-advisor" class="tab-content">
+      
+      <div class="card" style="border-left: 4px solid var(--accent-blue);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 4px;">
+              🧠 วิเคราะห์ทางเลือกการจัดสรร 1,000 บาท: ตลาดนอก (US/Global) vs ตลาดไทย (SET)
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">
+              เปรียบเทียบกลยุทธ์ข้ามตลาดเพื่อบรรลุเป้าหมาย <strong>กำไร ≥10% ต่อปี</strong> • ผสมผสานพลัง Growth ระดับโลกและ Cash Flow เงินปันผลจากหุ้นไทย
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" onclick="openOptionEditor()">✏️ แก้ไข Option</button>
+            <button class="btn btn-secondary btn-sm" onclick="resetOptionsToDefault()">🔄 รีเซ็ต Option เริ่มต้น</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Option Cards Grid -->
+      <div class="advisor-grid" id="advisorCardsGrid">
+        <!-- Dynamically rendered options -->
+      </div>
+
+      <!-- Strategy Simulator Box -->
+      <div class="sim-box">
+        <div class="sim-header">
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff;" id="simTitle">
+              🔮 จำลองโครงสร้างพอร์ตหลังลงทุนรอบถัดไป
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);" id="simSubtitle">
+              กำลังดูการจำลอง...
+            </p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="applyStrategyToModal()">
+            ⚡ นำแผนนี้ไปใช้ในบันทึก DCA
+          </button>
+        </div>
+
+        <div class="sim-breakdown-grid" id="simGrid">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div style="background: rgba(11, 17, 32, 0.6); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted);">
+          <strong style="color: var(--accent-green);">💬 บทวิเคราะห์จากเลขานุการ:</strong>
+          <span id="simAnalysisText">
+            -
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 3: S&P 500 ANALYSIS CONTENT -->
+    <div id="tab-sp500" class="tab-content">
+      
+      <div class="card" style="border-left: 4px solid var(--accent-green);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 4px;">
+              🏛 วิเคราะห์เจาะลึก: หุ้นน่าลงทุนในดัชนี S&P 500
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">
+              คัดกรองหุ้นระดับโลกจาก 500 บริษัทชั้นนำของสหรัฐฯ แยกตามลักษณะธุรกิจ คูเมือง (Moat) และความเหมาะสมสำหรับการออม DCA 1,000 บาท/เดือน
+            </p>
+          </div>
+          <span class="badge-target">🎯 สถิติดัชนี S&P 500: ~10-11% CAGR</span>
+        </div>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="sp-filter-bar">
+        <button class="filter-btn active" onclick="filterSpStocks('ALL')">🌟 ทั้งหมด (All Picks)</button>
+        <button class="filter-btn" onclick="filterSpStocks('TOP')">🏆 ตัวท็อปแนะนำสำหรับ DCA</button>
+        <button class="filter-btn" onclick="filterSpStocks('TECH')">🤖 AI & Big Tech (Mag 7)</button>
+        <button class="filter-btn" onclick="filterSpStocks('DEFENSIVE')">🛡 คูเมืองนอกกลุ่มเทค (Defensive/Health)</button>
+        <button class="filter-btn" onclick="filterSpStocks('ETF')">📈 กองทุนดัชนี (Index ETF)</button>
+      </div>
+
+      <!-- S&P 500 Cards Grid -->
+      <div class="sp-cards-grid" id="spCardsGrid">
+        <!-- Dynamically rendered S&P 500 stocks -->
+      </div>
+
+      <!-- Executive S&P 500 Comparison Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📋 ตารางเปรียบเทียบยุทธศาสตร์หุ้น S&P 500 ชั้นนำ</span>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Ticker / หุ้น</th>
+                <th>กลุ่มธุรกิจ (Sector)</th>
+                <th>จุดเด่นและคูเมือง (Economic Moat)</th>
+                <th style="text-align: right;">คาดการณ์ผลตอบแทน</th>
+                <th style="text-align: center;">ความเสี่ยง</th>
+                <th style="text-align: center;">บทบาทในพอร์ต</th>
+                <th style="text-align: center;">เลือก DCA</th>
+              </tr>
+            </thead>
+            <tbody id="spTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Add Transaction Modal -->
+  <div class="modal-overlay" id="txModal">
+    <div class="modal-card">
+      <h3 style="font-size: 1.2rem; font-weight: 600; color: #fff;">➕ บันทึกรายการลงทุน / ซื้อหุ้น DCA</h3>
+      
+      <form id="txForm" onsubmit="saveTransaction(event)">
+        <div class="form-group">
+          <label for="txDate">วันที่ทำรายการ</label>
+          <input type="date" id="txDate" class="form-control" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txMarket">ตลาดที่ซื้อ (Market)</label>
+            <select id="txMarket" class="form-control" onchange="handleMarketChange(this.value)">
+              <option value="US">🇺🇸 ตลาดสหรัฐฯ / นอก (USD)</option>
+              <option value="TH">🇹🇭 ตลาดหุ้นไทย (THB)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="txTicker">สัญลักษณ์หุ้น (Ticker)</label>
+            <select id="txTicker" class="form-control" onchange="handleTickerSelect(this.value)">
+              <!-- Populated dynamically based on market -->
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" id="customTickerGroup" style="display: none;">
+          <label for="txCustomTicker">ระบุ Ticker เอง</label>
+          <input type="text" id="txCustomTicker" class="form-control" placeholder="เช่น AAPL, CPALL, BDMS">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txType">ประเภทคำสั่ง</label>
+            <select id="txType" class="form-control">
+              <option value="BUY_DCA">ซื้อ DCA ประจำเดือน</option>
+              <option value="BUY">ซื้อทั่วไป (Lump Sum)</option>
+              <option value="SELL">ขายทำกำไร / ปรับพอร์ต</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="txAmountTHB">ยอดเงินลงทุน (บาท)</label>
+            <input type="number" step="0.01" id="txAmountTHB" class="form-control" placeholder="เช่น 500 หรือ 250" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txShares">จำนวนหุ้นที่ได้ (Shares)</label>
+            <input type="number" step="0.0000001" id="txShares" class="form-control" placeholder="เช่น 0.0668888 หรือ 10" required>
+          </div>
+          <div class="form-group">
+            <label for="txCostOriginal" id="txCostLabel">ราคาซื้อต่อหุ้น ($ USD)</label>
+            <input type="number" step="0.01" id="txCostOriginal" class="form-control" placeholder="เช่น 225.00 หรือ 65.00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="txNotes">บันทึกช่วยจำ (Notes)</label>
+          <input type="text" id="txNotes" class="form-control" placeholder="เช่น DCA ประจำงวด">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกรายการ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Option Customizer Modal -->
+  <div class="modal-overlay" id="optionModal">
+    <div class="modal-card">
+      <h3 style="font-size: 1.2rem; font-weight: 600; color: #fff;">✏️ แก้ไข / กำหนดสัดส่วน Option เอง</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        คุณสามารถปรับสัดส่วนเงิน 1,000 บาท ผสมผสานหุ้นตลาดนอกและหุ้นไทยได้อิสระ
+      </p>
+
+      <form id="optionEditForm" onsubmit="saveOptionChanges(event)">
+        <div class="form-group">
+          <label for="editOptId">เลือก Option ที่ต้องการแก้ไข</label>
+          <select id="editOptId" class="form-control" onchange="loadOptionIntoEditor(this.value)">
+            <option value="1">ทางเลือกที่ 1</option>
+            <option value="2">ทางเลือกที่ 2 (แนะนำ)</option>
+            <option value="3">ทางเลือกที่ 3</option>
+            <option value="4">ทางเลือกที่ 4</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editOptTitle">ชื่อหัวข้อ Option</label>
+          <input type="text" id="editOptTitle" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="editOptDesc">คำอธิบายกลยุทธ์</label>
+          <textarea id="editOptDesc" class="form-control" rows="2" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>จัดสรรเงิน 1,000 บาท (ระบุสัญลักษณ์หุ้นและยอดเงินบาท):</label>
+          <div class="form-row">
+            <input type="text" id="editTicker1" class="form-control" placeholder="หุ้น 1 (เช่น VOO หรือ CPALL)">
+            <input type="number" id="editAmount1" class="form-control" placeholder="ยอดเงิน (บาท) เช่น 500">
+          </div>
+          <div class="form-row" style="margin-top: 8px;">
+            <input type="text" id="editTicker2" class="form-control" placeholder="หุ้น 2 (เช่น NVDA หรือ BDMS)">
+            <input type="number" id="editAmount2" class="form-control" placeholder="ยอดเงิน (บาท) เช่น 250">
+          </div>
+          <div class="form-row" style="margin-top: 8px;">
+            <input type="text" id="editTicker3" class="form-control" placeholder="หุ้น 3 (เช่น GOOGL หรือ ADVANC)">
+            <input type="number" id="editAmount3" class="form-control" placeholder="ยอดเงิน (บาท) เช่น 250">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeOptionEditor()">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกการแก้ไข Option</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Initial Seed Data
+    const defaultData = {
+      version: 'v9_sp500_analysis',
+      fxRate: 33.22,
+      marketPrices: {
+        'NVDA': 225.01,
+        'GOOGL': 344.00,
+        'VOO': 510.00,
+        'QQQ': 485.00,
+        'MSFT': 420.00,
+        'AAPL': 230.00,
+        'AMZN': 185.00,
+        'META': 530.00,
+        'BRK.B': 450.00,
+        'LLY': 910.00,
+        'V': 280.00,
+        'COST': 880.00,
+        'JPM': 215.00,
+        'CPALL': 65.50,
+        'BDMS': 28.50,
+        'ADVANC': 290.00,
+        'SCB': 112.50,
+        'TDEX': 8.85
+      },
+      stockMarkets: {
+        'NVDA': 'US',
+        'GOOGL': 'US',
+        'VOO': 'US',
+        'QQQ': 'US',
+        'MSFT': 'US',
+        'AAPL': 'US',
+        'AMZN': 'US',
+        'META': 'US',
+        'BRK.B': 'US',
+        'LLY': 'US',
+        'V': 'US',
+        'COST': 'US',
+        'JPM': 'US',
+        'CPALL': 'TH',
+        'BDMS': 'TH',
+        'ADVANC': 'TH',
+        'SCB': 'TH',
+        'TDEX': 'TH'
+      },
+      transactions: [
+        {
+          id: 'tx-1',
+          date: '2026-08-18',
+          ticker: 'NVDA',
+          name: 'NVIDIA Corporation',
+          market: 'US',
+          type: 'BUY_DCA',
+          amountTHB: 499.96,
+          shares: 0.0668888,
+          costOriginal: 225.00,
+          notes: 'ต้นทุน $225.00 USD / หุ้น'
+        },
+        {
+          id: 'tx-2',
+          date: '2026-08-18',
+          ticker: 'GOOGL',
+          name: 'Alphabet Inc.',
+          market: 'US',
+          type: 'BUY_DCA',
+          amountTHB: 499.96,
+          shares: 0.0435436,
+          costOriginal: 345.63,
+          notes: 'ต้นทุน $345.63 USD / หุ้น'
+        }
+      ],
+      customOptions: {
+        1: {
+          id: 1,
+          title: 'ทางเลือกที่ 1: Global Growth Engine (US Big Tech)',
+          desc: 'เน้น 2 ขุมพลัง AI สหรัฐฯ ต่อเนื่อง (NVDA 500 บ. + GOOGL 500 บ.) เพื่ออัตราเร่งผลตอบแทนสูงสุด',
+          allocations: { 'NVDA': 500, 'GOOGL': 500 },
+          pros: ['✓ ศักยภาพผลตอบแทนทะลุ 12-18% ต่อปี', '✓ ผู้ชนะชัดเจนใน AI Megatrend'],
+          cons: ['⚠ พอร์ตผันผวนสูงตามตลาดหุ้นเทคสหรัฐฯ'],
+          isRecommended: false,
+          analysis: 'ทางเลือกที่ 1 มุ่งเน้นการเติบโตระดับโลกเต็ม 100% เหมาะสำหรับผู้ที่ต้องการเร่งผลตอบแทนให้เกิน 10% และรับความผันผวนของหุ้นเทคได้'
+        },
+        2: {
+          id: 2,
+          title: 'ทางเลือกที่ 2: Global Index Anchor (Core & Satellite) ⭐ แนะนำ',
+          desc: 'สร้างฐาน S&P 500 (VOO 500 บ.) การันตีค่าเฉลี่ย 10% + เร่ง Growth ด้วย NVDA 250 บ. + GOOGL 250 บ.',
+          allocations: { 'VOO': 500, 'NVDA': 250, 'GOOGL': 250 },
+          pros: ['✓ ปลอดภัยและเสถียรที่สุดเพื่อเป้าหมาย 10% CAGR', '✓ กระจาย 500 บริษัทชั้นนำของโลก'],
+          cons: ['⚠ ไม่ได้กำไรหวือหวาเท่า All-in NVDA'],
+          isRecommended: true,
+          analysis: 'ทางเลือกที่ 2 เป็นแผนที่สมดุลที่สุดตามหลักวิชาการ เพราะ S&P 500 ให้สถิติผลตอบแทน 10% ต่อปีในระยะยาวอยู่แล้ว การเสริม NVDA/GOOGL ช่วยดันผลตอบแทนทะลุเป้าหมายได้มั่นคง'
+        },
+        3: {
+          id: 3,
+          title: 'ทางเลือกที่ 3: Dual Engine (US Tech + หุ้นปันผลแกร่งไทย)',
+          desc: 'ผสมผสานหุ้นเทคโลก 500 บ. (NVDA/GOOGL) + หุ้นผูกขาดปันผลสูงของไทย 500 บ. (เช่น CPALL หรือ ADVANC)',
+          allocations: { 'NVDA': 500, 'CPALL': 500 },
+          pros: ['✓ ได้ทั้ง Capital Gain จากสหรัฐฯ และ Cash Flow ปันผลจากไทย', '✓ ลดความเสี่ยงอัตราแลกเปลี่ยน'],
+          cons: ['⚠ ดัชนีหุ้นไทย (SET) เติบโตช้ากว่าหุ้นเทคสหรัฐฯ ในช่วงที่ผ่านมา'],
+          isRecommended: false,
+          analysis: 'ทางเลือกที่ 3 สร้างสมดุลสองตลาด: หุ้นไทย (CPALL/ADVANC/BDMS) ช่วยลดการแกว่งตัวและจ่ายปันผลสม่ำเสมอ ขณะที่หุ้นสหรัฐฯ สร้าง Capital Growth'
+        },
+        4: {
+          id: 4,
+          title: 'ทางเลือกที่ 4: The Monopoly Titans (เจ้าสัวไทย + ผู้คุมเทคโนโลยีโลก)',
+          desc: 'กระจายเงิน 1,000 บ. ใน 3 เสาหลัก: S&P 500 (400 บ.) + ผู้นำ AI โลก (300 บ.) + เจ้าแห่งค้าปลีก/รพ.ไทย (300 บ.)',
+          allocations: { 'VOO': 400, 'GOOGL': 300, 'BDMS': 300 },
+          pros: ['✓ กระจายความเสี่ยงครบทุกมิติ (US Index + Tech + Thai Healthcare)', '✓ มั่นคงสูงมาก'],
+          cons: ['⚠ เงิน 1,000 บ. ถูกซอยย่อย 3 ตัว'],
+          isRecommended: false,
+          analysis: 'ทางเลือกที่ 4 เป็นพอร์ตแบบ All-Weather กระจายข้ามอุตสาหกรรมและข้ามประเทศ ปกป้องเงินต้นได้ดีเยี่ยม'
+        }
+      }
+    };
+
+    // S&P 500 Deep-Dive Stock Database
+    const sp500Database = [
+      {
+        ticker: 'VOO',
+        name: 'Vanguard S&P 500 ETF',
+        category: 'ETF',
+        isTop: true,
+        sector: 'Broad Market ETF',
+        moat: 'กองทุนรวมดัชนี 500 บริษัทชั้นนำของสหรัฐฯ กระจายความเสี่ยงสูงสุด ค่าธรรมเนียมเพียง 0.03%',
+        expectedCAGR: '10 - 12% ต่อปี',
+        risk: 'ต่ำ (กระจายตัวสูง)',
+        role: 'Core Foundation (เสาหลักของพอร์ต)',
+        dcaScore: '⭐⭐⭐⭐⭐',
+        defaultPriceUSD: 510.00
+      },
+      {
+        ticker: 'NVDA',
+        name: 'NVIDIA Corporation',
+        category: 'TECH',
+        isTop: true,
+        sector: 'Semiconductors & AI Hardware',
+        moat: 'ผูกขาดชิปประมวลผล AI (GPU Data Center) ส่วนแบ่งตลาดทั่วโลกกว่า 80-90% มี CUDA Software Ecosystem',
+        expectedCAGR: '15 - 25%+ ต่อปี',
+        risk: 'ปานกลาง-สูง (ผันผวนตามรอบชิป)',
+        role: 'Satellite Growth (หัวหอกเร่งกำไร)',
+        dcaScore: '⭐⭐⭐⭐⭐',
+        defaultPriceUSD: 225.01
+      },
+      {
+        ticker: 'GOOGL',
+        name: 'Alphabet Inc.',
+        category: 'TECH',
+        isTop: true,
+        sector: 'Interactive Media & Cloud',
+        moat: 'ผูกขาด Search Engine (ส่วนแบ่ง >90%), YouTube, Google Cloud, Android และ AI Ecosystem ที่แข็งแกร่ง',
+        expectedCAGR: '12 - 16% ต่อปี',
+        risk: 'ปานกลาง (Valuation ถูกเมื่อเทียบกับ Growth)',
+        role: 'Core Growth (เติบโตมั่นคง)',
+        dcaScore: '⭐⭐⭐⭐⭐',
+        defaultPriceUSD: 344.00
+      },
+      {
+        ticker: 'MSFT',
+        name: 'Microsoft Corporation',
+        category: 'TECH',
+        isTop: true,
+        sector: 'Systems Software & Cloud',
+        moat: 'ผูกขาดซอฟต์แวร์องค์กร (Office 365, Windows) + Azure Cloud เติบโตแรง + พันธมิตรหลัก OpenAI',
+        expectedCAGR: '12 - 16% ต่อปี',
+        risk: 'ต่ำ-ปานกลาง (กระแสเงินสดมหาศาล)',
+        role: 'Core Tech Fortress',
+        dcaScore: '⭐⭐⭐⭐⭐',
+        defaultPriceUSD: 420.00
+      },
+      {
+        ticker: 'AAPL',
+        name: 'Apple Inc.',
+        category: 'TECH',
+        isTop: false,
+        sector: 'Consumer Electronics & Services',
+        moat: 'Brand Loyalty แข็งแกร่งที่สุดในโลก อุปกรณ์ Active 2 พันล้านเครื่อง มีรายได้ Services Margin สูง',
+        expectedCAGR: '10 - 14% ต่อปี',
+        risk: 'ต่ำ-ปานกลาง (ซื้อหุ้นคืนมหาศาล)',
+        role: 'Ecosystem Compounder',
+        dcaScore: '⭐⭐⭐⭐',
+        defaultPriceUSD: 230.00
+      },
+      {
+        ticker: 'AMZN',
+        name: 'Amazon.com Inc.',
+        category: 'TECH',
+        isTop: false,
+        sector: 'Cloud Infrastructure & E-Commerce',
+        moat: 'ผู้นำ Cloud อันดับ 1 ของโลก (AWS ทำกำไรมหาศาล) + เครือข่ายโลจิสติกส์และ E-Commerce ที่ไม่มีใครเทียบได้',
+        expectedCAGR: '12 - 18% ต่อปี',
+        risk: 'ปานกลาง',
+        role: 'Dual-Engine Growth',
+        dcaScore: '⭐⭐⭐⭐',
+        defaultPriceUSD: 185.00
+      },
+      {
+        ticker: 'META',
+        name: 'Meta Platforms Inc.',
+        category: 'TECH',
+        isTop: false,
+        sector: 'Social Media & AI Advertising',
+        moat: 'ผู้ใช้งาน Facebook, Instagram, WhatsApp กว่า 3.2 พันล้านคน/วัน อัลกอริทึม AI Ads สร้างเงินสดมหาศาล',
+        expectedCAGR: '14 - 20% ต่อปี',
+        risk: 'ปานกลาง (ผันผวนตามตลาดโฆษณา)',
+        role: 'High Alpha Growth',
+        dcaScore: '⭐⭐⭐⭐',
+        defaultPriceUSD: 530.00
+      },
+      {
+        ticker: 'BRK.B',
+        name: 'Berkshire Hathaway',
+        category: 'DEFENSIVE',
+        isTop: true,
+        sector: 'Multi-Sector Conglomerate',
+        moat: 'อาณาจักรการลงทุนของ Warren Buffett (ธุรกิจประกัน Geico, รถไฟ BNSF, พลังงาน, ถือเงินสดมหาศาล)',
+        expectedCAGR: '10 - 13% ต่อปี',
+        risk: 'ต่ำมาก (ทนทานทุกวิกฤต)',
+        role: 'Defensive Value Compounder',
+        dcaScore: '⭐⭐⭐⭐⭐',
+        defaultPriceUSD: 450.00
+      },
+      {
+        ticker: 'LLY',
+        name: 'Eli Lilly and Company',
+        category: 'DEFENSIVE',
+        isTop: false,
+        sector: 'Pharmaceuticals & Healthcare',
+        moat: 'ผู้นำยารักษาโรคอ้วนและเบาหวาน (GLP-1 Mounjaro/Zepbound) และยาอัลไซเมอร์ สิทธิบัตรคุ้มครองยาวนาน',
+        expectedCAGR: '15 - 20%+ ต่อปี',
+        risk: 'ปานกลาง (เติบโตแรงในกลุ่มสุขภาพ)',
+        role: 'Healthcare Mega Growth',
+        dcaScore: '⭐⭐⭐⭐',
+        defaultPriceUSD: 910.00
+      },
+      {
+        ticker: 'V',
+        name: 'Visa Inc.',
+        category: 'DEFENSIVE',
+        isTop: false,
+        sector: 'Payment Processing Network',
+        moat: 'ผูกขาดโครงข่ายชำระเงินดิจิทัลทั่วโลก (คู่กับ Mastercard) เก็บค่าธรรมเนียมทุกธุรกรรม Net Margin >50%',
+        expectedCAGR: '11 - 15% ต่อปี',
+        risk: 'ต่ำ-ปานกลาง (ธุรกิจเก็บค่าผ่านทาง)',
+        role: 'Tollbooth Cash Flow',
+        dcaScore: '⭐⭐⭐⭐',
+        defaultPriceUSD: 280.00
+      },
+      {
+        ticker: 'COST',
+        name: 'Costco Wholesale',
+        category: 'DEFENSIVE',
+        isTop: false,
+        sector: 'Consumer Staples & Retail',
+        moat: 'ค้าปลีกระบบสมาชิก (Membership Model) Renewal Rate 90%+ ผู้บริโภคเหนียวแน่น ทนทานต่อเงินเฟ้อ',
+        expectedCAGR: '10 - 13% ต่อปี',
+        risk: 'ต่ำมาก (กำไรสม่ำเสมอ)',
+        role: 'Recession-Proof Anchor',
+        dcaScore: '⭐⭐⭐⭐',
+        defaultPriceUSD: 880.00
+      },
+      {
+        ticker: 'QQQ',
+        name: 'Invesco QQQ Trust (Nasdaq 100)',
+        category: 'ETF',
+        isTop: true,
+        sector: 'Nasdaq 100 Tech ETF',
+        moat: 'กองทุน 100 หุ้นนวัตกรรมสูงสุดของสหรัฐฯ (ไม่รวมการเงิน) ผลตอบแทนย้อนหลัง 10 ปีเฉลี่ย ~15-18% ต่อปี',
+        expectedCAGR: '14 - 18% ต่อปี',
+        risk: 'ปานกลาง (เน้นหุ้นเทคโนโลยี)',
+        role: 'Tech Growth Accelerator',
+        dcaScore: '⭐⭐⭐⭐⭐',
+        defaultPriceUSD: 485.00
+      }
+    ];
+
+    let stored = localStorage.getItem('portfolio_tracker_sp500_v9');
+    let appData = stored ? JSON.parse(stored) : defaultData;
+
+    if (!appData.customOptions) appData.customOptions = defaultData.customOptions;
+    if (!appData.stockMarkets) appData.stockMarkets = defaultData.stockMarkets;
+
+    document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fxRateInput').value = appData.fxRate || 33.22;
+
+    function saveToStorage() {
+      localStorage.setItem('portfolio_tracker_sp500_v9', JSON.stringify(appData));
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if (tabId === 'tab-dashboard') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tab-dashboard').classList.add('active');
+      } else if (tabId === 'tab-advisor') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tab-advisor').classList.add('active');
+        renderAdvisorCards();
+        updateSimulation(selectedOptionId);
+      } else if (tabId === 'tab-sp500') {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('tab-sp500').classList.add('active');
+        renderSp500Cards('ALL');
+      }
+    }
+
+    let currentSpFilter = 'ALL';
+
+    function filterSpStocks(cat) {
+      currentSpFilter = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      renderSp500Cards(cat);
+    }
+
+    function renderSp500Cards(filterCategory) {
+      const grid = document.getElementById('spCardsGrid');
+      const tableBody = document.getElementById('spTableBody');
+      grid.innerHTML = '';
+      tableBody.innerHTML = '';
+
+      const filtered = sp500Database.filter(s => {
+        if (filterCategory === 'ALL') return true;
+        if (filterCategory === 'TOP') return s.isTop;
+        if (filterCategory === 'TECH') return s.category === 'TECH';
+        if (filterCategory === 'DEFENSIVE') return s.category === 'DEFENSIVE';
+        if (filterCategory === 'ETF') return s.category === 'ETF';
+        return true;
+      });
+
+      filtered.forEach(s => {
+        // Render Card
+        const card = document.createElement('div');
+        card.className = 'sp-card';
+        card.innerHTML = `
+          <div class="sp-card-header">
+            <div>
+              <div class="sp-ticker">${s.ticker}</div>
+              <div class="sp-name">${s.name}</div>
+            </div>
+            <span class="sp-sector-pill">${s.sector}</span>
+          </div>
+
+          <div class="sp-moat">
+            <strong>คูเมืองธุรกิจ (Moat):</strong> ${s.moat}
+          </div>
+
+          <div class="sp-metrics">
+            <div class="sp-metric-item">
+              <span class="sp-metric-label">คาดการณ์ผลตอบแทน</span>
+              <span class="sp-metric-val green">${s.expectedCAGR}</span>
+            </div>
+            <div class="sp-metric-item">
+              <span class="sp-metric-label">ระดับความเสี่ยง</span>
+              <span class="sp-metric-val amber">${s.risk}</span>
+            </div>
+            <div class="sp-metric-item">
+              <span class="sp-metric-label">บทบาทในพอร์ต</span>
+              <span class="sp-metric-val">${s.role}</span>
+            </div>
+            <div class="sp-metric-item">
+              <span class="sp-metric-label">ความเหมาะสม DCA</span>
+              <span class="sp-metric-val">${s.dcaScore}</span>
+            </div>
+          </div>
+
+          <div class="sp-footer">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">ราคาประมาณ: <strong>$${s.defaultPriceUSD.toFixed(2)}</strong></span>
+            <button class="btn btn-primary btn-sm" onclick="pickSpStockForDca('${s.ticker}', ${s.defaultPriceUSD})">
+              ➕ เลือกตัวนี้เข้าพอร์ต DCA
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+
+        // Render Table Row
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong style="color: var(--accent-blue); font-size: 0.95rem;">${s.ticker}</strong><br>
+            <small style="color: var(--text-muted);">${s.name}</small>
+          </td>
+          <td><span class="sp-sector-pill">${s.sector}</span></td>
+          <td style="font-size: 0.8rem; color: #cbd5e1; max-width: 320px;">${s.moat}</td>
+          <td style="text-align: right; font-weight: 600; color: var(--accent-green);">${s.expectedCAGR}</td>
+          <td style="text-align: center; font-size: 0.8rem;">${s.risk}</td>
+          <td style="text-align: center; font-size: 0.8rem; font-weight: 500;">${s.role}</td>
+          <td style="text-align: center;">
+            <button class="btn btn-secondary btn-sm" onclick="pickSpStockForDca('${s.ticker}', ${s.defaultPriceUSD})">
+              เลือกซื้อ
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function pickSpStockForDca(ticker, priceUSD) {
+      openModal();
+      document.getElementById('txMarket').value = 'US';
+      handleMarketChange('US');
+      
+      const select = document.getElementById('txTicker');
+      let found = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === ticker) {
+          select.selectedIndex = i;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        select.value = 'OTHER';
+        document.getElementById('customTickerGroup').style.display = 'block';
+        document.getElementById('txCustomTicker').value = ticker;
+      }
+
+      document.getElementById('txCostOriginal').value = priceUSD;
+      document.getElementById('txAmountTHB').value = 500.00;
+      document.getElementById('txNotes').value = `DCA: สะสมหุ้น S&P 500 (${ticker})`;
+    }
+
+    let selectedOptionId = 2;
+
+    function renderAdvisorCards() {
+      const grid = document.getElementById('advisorCardsGrid');
+      grid.innerHTML = '';
+
+      Object.values(appData.customOptions).forEach(opt => {
+        const isSel = opt.id === selectedOptionId;
+        const card = document.createElement('div');
+        card.className = `option-card ${opt.isRecommended ? 'recommended' : ''} ${isSel ? 'selected' : ''}`;
+        card.id = `opt-card-${opt.id}`;
+        card.onclick = () => selectOption(opt.id);
+
+        let pillsHtml = '';
+        Object.keys(opt.allocations).forEach(t => {
+          const amt = opt.allocations[t];
+          if (amt > 0) {
+            const isThai = ['CPALL','BDMS','ADVANC','SCB','TDEX','PTT','AOT'].includes(t);
+            const pillClass = opt.isRecommended ? 'green' : (isThai ? 'amber' : '');
+            pillsHtml += `<span class="alloc-pill ${pillClass}">${isThai ? '🇹🇭 ' : '🇺🇸 '}${t} ${amt} บาท</span>`;
+          }
+        });
+
+        let prosConsHtml = '';
+        if (opt.pros) opt.pros.forEach(p => { prosConsHtml += `<div class="pro-item">${p}</div>`; });
+        if (opt.cons) opt.cons.forEach(c => { prosConsHtml += `<div class="con-item">${c}</div>`; });
+
+        card.innerHTML = `
+          ${opt.isRecommended ? '<span class="rec-badge">⭐ แนะนำโดยเลขานุการ</span>' : ''}
+          <div class="option-header">
+            <div class="option-title">${opt.title}</div>
+          </div>
+          <div class="allocation-pills">${pillsHtml}</div>
+          <div class="option-desc">${opt.desc}</div>
+          <div class="option-pros-cons">${prosConsHtml}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function selectOption(id) {
+      selectedOptionId = id;
+      renderAdvisorCards();
+      updateSimulation(id);
+    }
+
+    function getStockFullName(ticker) {
+      const names = {
+        'NVDA': 'NVIDIA Corp. (US)',
+        'GOOGL': 'Alphabet Inc. (US)',
+        'VOO': 'Vanguard S&P 500 ETF (US)',
+        'QQQ': 'Invesco QQQ Nasdaq (US)',
+        'MSFT': 'Microsoft Corp. (US)',
+        'AAPL': 'Apple Inc. (US)',
+        'AMZN': 'Amazon.com Inc. (US)',
+        'META': 'Meta Platforms (US)',
+        'BRK.B': 'Berkshire Hathaway (US)',
+        'LLY': 'Eli Lilly & Co. (US)',
+        'V': 'Visa Inc. (US)',
+        'COST': 'Costco Wholesale (US)',
+        'JPM': 'JPMorgan Chase (US)',
+        'CPALL': 'CP ALL PCL (TH)',
+        'BDMS': 'Bangkok Dusit Med (TH)',
+        'ADVANC': 'Advanced Info Service (TH)',
+        'SCB': 'SCB X PCL (TH)',
+        'TDEX': 'ThaiDEX SET50 ETF (TH)'
+      };
+      return names[ticker] || ticker;
+    }
+
+    function updateSimulation(id) {
+      const opt = appData.customOptions[id];
+      if (!opt) return;
+
+      document.getElementById('simTitle').innerText = `🔮 จำลองโครงสร้างพอร์ตหลังลงทุนรอบถัดไป`;
+      
+      let allocSummary = Object.keys(opt.allocations)
+        .filter(k => opt.allocations[k] > 0)
+        .map(k => `${k} ${opt.allocations[k]} บ.`)
+        .join(' + ');
+      
+      document.getElementById('simSubtitle').innerText = `กำลังดู: ${opt.title} (${allocSummary})`;
+      document.getElementById('simAnalysisText').innerText = opt.analysis || opt.desc;
+
+      const currentTotals = {};
+      let totalCurrentInvested = 0;
+
+      appData.transactions.forEach(tx => {
+        const t = tx.ticker.toUpperCase();
+        const amt = parseFloat(tx.amountTHB) || 0;
+        if (tx.type.startsWith('BUY') || tx.type.includes('DCA')) {
+          currentTotals[t] = (currentTotals[t] || 0) + amt;
+          totalCurrentInvested += amt;
+        } else if (tx.type.includes('SELL') || tx.type.includes('Sell')) {
+          currentTotals[t] = (currentTotals[t] || 0) - amt;
+          totalCurrentInvested -= amt;
+        }
+      });
+
+      const simAssets = { ...currentTotals };
+      let newTotal = totalCurrentInvested;
+
+      Object.keys(opt.allocations).forEach(k => {
+        const addAmt = parseFloat(opt.allocations[k]) || 0;
+        simAssets[k] = (simAssets[k] || 0) + addAmt;
+        newTotal += addAmt;
+      });
+
+      const simGrid = document.getElementById('simGrid');
+      simGrid.innerHTML = '';
+
+      Object.keys(simAssets).forEach(k => {
+        const val = simAssets[k];
+        if (val <= 0) return;
+        const pct = newTotal > 0 ? (val / newTotal) * 100 : 0;
+        const isThai = ['CPALL','BDMS','ADVANC','SCB','TDEX','PTT','AOT'].includes(k);
+        const item = document.createElement('div');
+        item.className = 'sim-item';
+        item.innerHTML = `
+          <div class="sim-item-name">${isThai ? '🇹🇭 ' : '🇺🇸 '}${getStockFullName(k)}</div>
+          <div class="sim-item-val">${formatTHB(val)}</div>
+          <div class="sim-item-pct">สัดส่วนพอร์ต ${pct.toFixed(1)}%</div>
+        `;
+        simGrid.appendChild(item);
+      });
+    }
+
+    function applyStrategyToModal() {
+      openModal();
+      const opt = appData.customOptions[selectedOptionId];
+      document.getElementById('txNotes').value = `DCA: ตามแผน ${opt.title}`;
+    }
+
+    function handleMarketChange(mkt) {
+      const tickerSelect = document.getElementById('txTicker');
+      tickerSelect.innerHTML = '';
+      const costLabel = document.getElementById('txCostLabel');
+
+      if (mkt === 'US') {
+        costLabel.innerText = 'ราคาซื้อต่อหุ้น ($ USD)';
+        const usStocks = [
+          { t: 'NVDA', n: 'NVDA (NVIDIA)' },
+          { t: 'GOOGL', n: 'GOOGL (Alphabet)' },
+          { t: 'VOO', n: 'VOO (S&P 500 ETF)' },
+          { t: 'QQQ', n: 'QQQ (Nasdaq 100 ETF)' },
+          { t: 'MSFT', n: 'MSFT (Microsoft)' },
+          { t: 'AAPL', n: 'AAPL (Apple)' },
+          { t: 'AMZN', n: 'AMZN (Amazon)' },
+          { t: 'META', n: 'META (Meta Platforms)' },
+          { t: 'BRK.B', n: 'BRK.B (Berkshire Hathaway)' },
+          { t: 'LLY', n: 'LLY (Eli Lilly)' },
+          { t: 'V', n: 'V (Visa)' },
+          { t: 'COST', n: 'COST (Costco)' },
+          { t: 'JPM', n: 'JPM (JPMorgan)' },
+          { t: 'OTHER', n: 'อื่นๆ (พิมพ์เอง)...' }
+        ];
+        usStocks.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.t;
+          opt.innerText = s.n;
+          tickerSelect.appendChild(opt);
+        });
+      } else {
+        costLabel.innerText = 'ราคาซื้อต่อหุ้น (บาท THB)';
+        const thStocks = [
+          { t: 'CPALL', n: 'CPALL (ซีพี ออลล์)' },
+          { t: 'BDMS', n: 'BDMS (กรุงเทพดุสิตเวชการ)' },
+          { t: 'ADVANC', n: 'ADVANC (แอดวานซ์ อินโฟร์)' },
+          { t: 'SCB', n: 'SCB (เอสซีบี เอกซ์)' },
+          { t: 'TDEX', n: 'TDEX (SET50 ETF)' },
+          { t: 'PTT', n: 'PTT (ปตท.)' },
+          { t: 'AOT', n: 'AOT (ท่าอากาศยานไทย)' },
+          { t: 'OTHER', n: 'อื่นๆ (พิมพ์เอง)...' }
+        ];
+        thStocks.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.t;
+          opt.innerText = s.n;
+          tickerSelect.appendChild(opt);
+        });
+      }
+      handleTickerSelect(tickerSelect.value);
+    }
+
+    function handleTickerSelect(val) {
+      const customGroup = document.getElementById('customTickerGroup');
+      if (val === 'OTHER') {
+        customGroup.style.display = 'block';
+      } else {
+        customGroup.style.display = 'none';
+      }
+
+      if (val === 'NVDA') document.getElementById('txCostOriginal').value = 225.00;
+      else if (val === 'GOOGL') document.getElementById('txCostOriginal').value = 345.63;
+      else if (val === 'VOO') document.getElementById('txCostOriginal').value = 510.00;
+      else if (val === 'QQQ') document.getElementById('txCostOriginal').value = 485.00;
+      else if (val === 'MSFT') document.getElementById('txCostOriginal').value = 420.00;
+      else if (val === 'AAPL') document.getElementById('txCostOriginal').value = 230.00;
+      else if (val === 'AMZN') document.getElementById('txCostOriginal').value = 185.00;
+      else if (val === 'META') document.getElementById('txCostOriginal').value = 530.00;
+      else if (val === 'BRK.B') document.getElementById('txCostOriginal').value = 450.00;
+      else if (val === 'LLY') document.getElementById('txCostOriginal').value = 910.00;
+      else if (val === 'V') document.getElementById('txCostOriginal').value = 280.00;
+      else if (val === 'COST') document.getElementById('txCostOriginal').value = 880.00;
+      else if (val === 'JPM') document.getElementById('txCostOriginal').value = 215.00;
+      else if (val === 'CPALL') document.getElementById('txCostOriginal').value = 65.50;
+      else if (val === 'BDMS') document.getElementById('txCostOriginal').value = 28.50;
+      else if (val === 'ADVANC') document.getElementById('txCostOriginal').value = 290.00;
+      else if (val === 'SCB') document.getElementById('txCostOriginal').value = 112.50;
+      else if (val === 'TDEX') document.getElementById('txCostOriginal').value = 8.85;
+      else document.getElementById('txCostOriginal').value = '';
+    }
+
+    function openOptionEditor() {
+      document.getElementById('optionModal').classList.add('active');
+      loadOptionIntoEditor(document.getElementById('editOptId').value);
+    }
+
+    function closeOptionEditor() {
+      document.getElementById('optionModal').classList.remove('active');
+    }
+
+    function loadOptionIntoEditor(id) {
+      const opt = appData.customOptions[id];
+      if (!opt) return;
+
+      document.getElementById('editOptTitle').value = opt.title;
+      document.getElementById('editOptDesc').value = opt.desc;
+
+      const keys = Object.keys(opt.allocations);
+      document.getElementById('editTicker1').value = keys[0] || '';
+      document.getElementById('editAmount1').value = keys[0] ? opt.allocations[keys[0]] : '';
+
+      document.getElementById('editTicker2').value = keys[1] || '';
+      document.getElementById('editAmount2').value = keys[1] ? opt.allocations[keys[1]] : '';
+
+      document.getElementById('editTicker3').value = keys[2] || '';
+      document.getElementById('editAmount3').value = keys[2] ? opt.allocations[keys[2]] : '';
+    }
+
+    function saveOptionChanges(e) {
+      e.preventDefault();
+      const id = document.getElementById('editOptId').value;
+      const title = document.getElementById('editOptTitle').value.trim();
+      const desc = document.getElementById('editOptDesc').value.trim();
+
+      const allocations = {};
+      const t1 = document.getElementById('editTicker1').value.trim().toUpperCase();
+      const a1 = parseFloat(document.getElementById('editAmount1').value) || 0;
+      if (t1 && a1 > 0) allocations[t1] = a1;
+
+      const t2 = document.getElementById('editTicker2').value.trim().toUpperCase();
+      const a2 = parseFloat(document.getElementById('editAmount2').value) || 0;
+      if (t2 && a2 > 0) allocations[t2] = a2;
+
+      const t3 = document.getElementById('editTicker3').value.trim().toUpperCase();
+      const a3 = parseFloat(document.getElementById('editAmount3').value) || 0;
+      if (t3 && a3 > 0) allocations[t3] = a3;
+
+      if (Object.keys(allocations).length === 0) {
+        alert('กรุณาระบุสัญลักษณ์หุ้นและยอดเงินอย่างน้อย 1 รายการ');
+        return;
+      }
+
+      appData.customOptions[id].title = title;
+      appData.customOptions[id].desc = desc;
+      appData.customOptions[id].allocations = allocations;
+      appData.customOptions[id].analysis = `กลยุทธ์ที่ปรับแต่ง: จัดสรร ${Object.keys(allocations).map(k=>k+' '+allocations[k]+' บ.').join(' + ')}`;
+
+      saveToStorage();
+      closeOptionEditor();
+      renderAdvisorCards();
+      updateSimulation(id);
+    }
+
+    function resetOptionsToDefault() {
+      if (confirm('คุณต้องการรีเซ็ต Option ทั้งหมดกลับเป็นค่าเริ่มต้นใช่หรือไม่?')) {
+        appData.customOptions = defaultData.customOptions;
+        saveToStorage();
+        renderAdvisorCards();
+        updateSimulation(selectedOptionId);
+      }
+    }
+
+    function updateFxRate(val) {
+      appData.fxRate = parseFloat(val) || 33.22;
+      saveToStorage();
+      renderAll();
+    }
+
+    function updateStockPrice(ticker, val) {
+      const price = parseFloat(val) || 0;
+      if (!appData.marketPrices) appData.marketPrices = {};
+      appData.marketPrices[ticker] = price;
+      saveToStorage();
+      renderAll();
+    }
+
+    function resetToMarketDefaults() {
+      appData.marketPrices['NVDA'] = 225.01;
+      appData.marketPrices['GOOGL'] = 344.00;
+      appData.marketPrices['CPALL'] = 65.50;
+      appData.marketPrices['BDMS'] = 28.50;
+      appData.marketPrices['ADVANC'] = 290.00;
+      appData.fxRate = 33.22;
+      document.getElementById('fxRateInput').value = 33.22;
+      saveToStorage();
+      renderAll();
+    }
+
+    async function fetchLivePricesFromWeb() {
+      const btn = document.getElementById('btnLiveFetch');
+      const statusEl = document.getElementById('priceStatusText');
+      btn.innerText = '⏳ กำลังดึงราคา...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('live_prices.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data.NVDA) appData.marketPrices['NVDA'] = data.NVDA;
+          if (data.GOOGL) appData.marketPrices['GOOGL'] = data.GOOGL;
+          saveToStorage();
+          renderAll();
+          statusEl.innerHTML = `● อัปเดตราคาล่าสุดแล้ว: <strong>NVDA $${data.NVDA}</strong> | <strong>GOOGL $${data.GOOGL}</strong>`;
+          btn.innerText = '✅ อัปเดตสำเร็จ!';
+          setTimeout(() => { btn.innerText = '⚡ อัปเดตราคาตลาดสด'; btn.disabled = false; }, 2000);
+          return;
+        }
+      } catch (err) {
+        console.log('Local JSON note:', err);
+      }
+
+      btn.innerText = '⚡ อัปเดตราคาตลาดสด';
+      btn.disabled = false;
+      alert('💡 ดับเบิลคลิกไฟล์ "update_prices.bat" เพื่อดึงราคาตลาดสดแบบ 1-Click ได้ทันทีครับ!');
+    }
+
+    function formatTHB(num) {
+      return '฿' + num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatUSD(num) {
+      return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function renderAll() {
+      const holdings = {};
+      let totalInvestedTHB = 0;
+
+      appData.transactions.forEach(tx => {
+        const ticker = tx.ticker.toUpperCase();
+        if (!holdings[ticker]) {
+          holdings[ticker] = {
+            ticker: ticker,
+            name: tx.name || ticker,
+            market: tx.market || (['CPALL','BDMS','ADVANC','SCB','TDEX','PTT','AOT'].includes(ticker) ? 'TH' : 'US'),
+            shares: 0,
+            investedTHB: 0,
+            costOriginalList: []
+          };
+        }
+
+        const amt = parseFloat(tx.amountTHB) || 0;
+        const sh = parseFloat(tx.shares) || 0;
+        const costOrig = parseFloat(tx.costOriginal) || 0;
+
+        if (tx.type.includes('DCA') || tx.type.includes('Buy') || tx.type.startsWith('BUY')) {
+          holdings[ticker].shares += sh;
+          holdings[ticker].investedTHB += amt;
+          totalInvestedTHB += amt;
+          if (costOrig > 0) {
+            holdings[ticker].costOriginalList.push({ shares: sh, cost: costOrig });
+          }
+        } else if (tx.type.includes('Sell') || tx.type === 'SELL') {
+          holdings[ticker].shares -= sh;
+          holdings[ticker].investedTHB -= amt;
+          totalInvestedTHB -= amt;
+        }
+      });
+
+      // Render Holdings Table
+      const holdingsTableBody = document.getElementById('holdingsTableBody');
+      holdingsTableBody.innerHTML = '';
+
+      let totalCurrentValueTHB = 0;
+      const fx = appData.fxRate || 33.22;
+
+      Object.values(holdings).forEach(h => {
+        if (h.shares <= 0) return;
+
+        const isThai = h.market === 'TH' || ['CPALL','BDMS','ADVANC','SCB','TDEX','PTT','AOT'].includes(h.ticker);
+        const currentPriceRaw = appData.marketPrices[h.ticker] || (h.ticker === 'NVDA' ? 225.01 : (h.ticker === 'GOOGL' ? 344.00 : (isThai ? 50.0 : 100.0)));
+        
+        let currentPriceTHB = isThai ? currentPriceRaw : (currentPriceRaw * fx);
+        let currentValueTHB = h.shares * currentPriceTHB;
+        let avgCostPerShareTHB = h.investedTHB / h.shares;
+
+        let avgCostBadge = '';
+        if (isThai) {
+          avgCostBadge = `<span class="cost-badge" style="background: rgba(251, 191, 36, 0.12); color: var(--accent-amber);">฿${avgCostPerShareTHB.toFixed(2)} THB</span>`;
+        } else {
+          let avgUsd = h.ticker === 'NVDA' ? 225.00 : (h.ticker === 'GOOGL' ? 345.63 : avgCostPerShareTHB / fx);
+          avgCostBadge = `<span class="cost-badge">$${avgUsd.toFixed(2)} USD</span>`;
+        }
+
+        const profitTHB = currentValueTHB - h.investedTHB;
+        const profitPct = h.investedTHB > 0 ? (profitTHB / h.investedTHB) * 100 : 0;
+
+        totalCurrentValueTHB += currentValueTHB;
+
+        const isPositive = profitTHB >= 0;
+        const profitClass = isPositive ? 'profit-positive' : 'profit-negative';
+        const sign = isPositive ? '+' : '';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>
+            <div class="stock-tag">
+              <span class="market-badge ${isThai ? 'th' : 'us'}">${isThai ? '🇹🇭 SET' : '🇺🇸 US'}</span>
+              ${h.ticker}
+              <span>${getStockFullName(h.ticker)}</span>
+            </div>
+          </td>
+          <td style="text-align: right; font-weight: 600;">${h.shares.toFixed(7)}</td>
+          <td style="text-align: right; font-weight: 600;">${formatTHB(h.investedTHB)}</td>
+          <td style="text-align: right;">
+            <div style="font-weight: 600; color: #fff;">${formatTHB(avgCostPerShareTHB)}</div>
+            ${avgCostBadge}
+          </td>
+          <td style="text-align: right;">
+            <input type="number" step="0.01" class="price-input" 
+              value="${currentPriceRaw.toFixed(2)}" 
+              onchange="updateStockPrice('${h.ticker}', this.value)"
+              title="แก้ไขราคาตลาด">
+            <div style="font-size: 0.7rem; color: var(--text-muted);">${isThai ? 'THB' : 'USD'}</div>
+          </td>
+          <td style="text-align: right; font-weight: 700; color: var(--accent-blue);">${formatTHB(currentValueTHB)}</td>
+          <td style="text-align: right;" class="${profitClass}">
+            ${sign}${formatTHB(profitTHB)}<br>
+            <small>(${sign}${profitPct.toFixed(2)}%)</small>
+          </td>
+        `;
+        holdingsTableBody.appendChild(row);
+      });
+
+      // Update Top Summary Cards
+      const totalProfitTHB = totalCurrentValueTHB - totalInvestedTHB;
+      const totalProfitPct = totalInvestedTHB > 0 ? (totalProfitTHB / totalInvestedTHB) * 100 : 0;
+      const isTotalPositive = totalProfitTHB >= 0;
+
+      document.getElementById('totalInvested').innerText = formatTHB(totalInvestedTHB);
+      document.getElementById('totalDcaRounds').innerText = `${appData.transactions.length} รายการบันทึก`;
+
+      document.getElementById('portfolioValue').innerText = formatTHB(totalCurrentValueTHB);
+      document.getElementById('portfolioValueUSD').innerText = formatUSD(totalCurrentValueTHB / fx);
+
+      const profitCardEl = document.getElementById('profitCard');
+      if (isTotalPositive) {
+        profitCardEl.className = 'metric-card success';
+        document.getElementById('totalProfit').className = 'metric-value profit-positive';
+        document.getElementById('totalProfit').innerText = `+${formatTHB(totalProfitTHB)}`;
+        document.getElementById('totalProfitPct').innerText = `+${totalProfitPct.toFixed(2)}% รวมผลตอบแทน`;
+      } else {
+        profitCardEl.className = 'metric-card warning';
+        document.getElementById('totalProfit').className = 'metric-value profit-negative';
+        document.getElementById('totalProfit').innerText = `${formatTHB(totalProfitTHB)}`;
+        document.getElementById('totalProfitPct').innerText = `${totalProfitPct.toFixed(2)}% รวมผลตอบแทน`;
+      }
+
+      // Year 1 Goal Progress
+      const year1Goal = 12000;
+      const progressPercent = Math.min(100, (totalInvestedTHB / year1Goal) * 100);
+      document.getElementById('progressBarFill').style.width = `${progressPercent}%`;
+      document.getElementById('progressBarLabel').innerText = `${progressPercent.toFixed(1)}%`;
+      document.getElementById('dcaProgressText').innerText = `สะสมแล้ว ${formatTHB(totalInvestedTHB)} / 12,000 บาท`;
+
+      // Render Transaction Ledger
+      const txTableBody = document.getElementById('txTableBody');
+      txTableBody.innerHTML = '';
+      document.getElementById('txCountBadge').innerText = `${appData.transactions.length} รายการ`;
+
+      appData.transactions.slice().reverse().forEach((tx) => {
+        const avgCostTHB = tx.shares > 0 ? tx.amountTHB / tx.shares : 0;
+        const isThai = tx.market === 'TH' || ['CPALL','BDMS','ADVANC','SCB','TDEX','PTT','AOT'].includes(tx.ticker);
+        const costDisplay = isThai ? `฿${parseFloat(tx.costOriginal || avgCostTHB).toFixed(2)} THB` : (tx.costOriginal ? `$${parseFloat(tx.costOriginal).toFixed(2)} USD` : (tx.ticker === 'NVDA' ? '$225.00 USD' : '$345.63 USD'));
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${tx.date}</td>
+          <td>
+            <span class="market-badge ${isThai ? 'th' : 'us'}">${isThai ? '🇹🇭 SET' : '🇺🇸 US'}</span>
+            <strong style="color: var(--accent-blue);">${tx.ticker}</strong>
+          </td>
+          <td><span class="status-pill">${tx.type || 'BUY_DCA'}</span></td>
+          <td style="text-align: right; font-weight: 600;">${formatTHB(parseFloat(tx.amountTHB))}</td>
+          <td style="text-align: right;">${parseFloat(tx.shares).toFixed(7)}</td>
+          <td style="text-align: right;">
+            <div>${formatTHB(avgCostTHB)}</div>
+            <small style="color: ${isThai ? 'var(--accent-amber)' : 'var(--accent-blue)'};">${costDisplay}</small>
+          </td>
+          <td style="color: var(--text-muted); font-size: 0.8rem;">${tx.notes || '-'}</td>
+          <td style="text-align: center;">
+            <button class="btn btn-danger-outline btn-sm" onclick="deleteTransaction('${tx.id}')">ลบ</button>
+          </td>
+        `;
+        txTableBody.appendChild(tr);
+      });
+    }
+
+    function openModal() {
+      document.getElementById('txModal').classList.add('active');
+      handleMarketChange(document.getElementById('txMarket').value);
+    }
+
+    function closeModal() {
+      document.getElementById('txModal').classList.remove('active');
+    }
+
+    function saveTransaction(e) {
+      e.preventDefault();
+      const date = document.getElementById('txDate').value;
+      const market = document.getElementById('txMarket').value;
+      const selectTicker = document.getElementById('txTicker').value;
+      const customTicker = document.getElementById('txCustomTicker').value.trim().toUpperCase();
+      const ticker = selectTicker === 'OTHER' ? (customTicker || 'UNKNOWN') : selectTicker;
+      const type = document.getElementById('txType').value;
+      const amountTHB = parseFloat(document.getElementById('txAmountTHB').value) || 0;
+      const shares = parseFloat(document.getElementById('txShares').value) || 0;
+      const costOriginal = parseFloat(document.getElementById('txCostOriginal').value) || (ticker === 'NVDA' ? 225.00 : (ticker === 'GOOGL' ? 345.63 : 0));
+      const notes = document.getElementById('txNotes').value.trim();
+
+      const newTx = {
+        id: 'tx-' + Date.now(),
+        date: date,
+        ticker: ticker,
+        market: market,
+        name: getStockFullName(ticker),
+        type: type,
+        amountTHB: amountTHB,
+        shares: shares,
+        costOriginal: costOriginal,
+        notes: notes || `ต้นทุน ${market === 'US' ? '$' + costOriginal.toFixed(2) + ' USD' : '฿' + costOriginal.toFixed(2) + ' THB'}`
+      };
+
+      if (!appData.marketPrices[ticker]) {
+        appData.marketPrices[ticker] = costOriginal || 50.0;
+      }
+      appData.stockMarkets[ticker] = market;
+
+      appData.transactions.push(newTx);
+      saveToStorage();
+      closeModal();
+      document.getElementById('txForm').reset();
+      document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+      renderAll();
+      updateSimulation(selectedOptionId);
+    }
+
+    function deleteTransaction(id) {
+      if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+        appData.transactions = appData.transactions.filter(t => t.id !== id);
+        saveToStorage();
+        renderAll();
+        updateSimulation(selectedOptionId);
+      }
+    }
+
+    function exportDataCSV() {
+      let csv = 'Date,Market,Ticker,Type,Invested_THB,Shares,Cost_Original,Notes\n';
+      appData.transactions.forEach(t => {
+        csv += `${t.date},${t.market || 'US'},${t.ticker},${t.type},${t.amountTHB},${t.shares},${t.costOriginal || ''},"${t.notes || ''}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `investment_ledger_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    // Initial render
+    handleMarketChange('US');
+    renderAll();
+    renderAdvisorCards();
+    renderSp500Cards('ALL');
+    updateSimulation(selectedOptionId);
+  </script>
+</body>
+</html>
