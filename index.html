@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Sarabun', 'Helvetica Neue', Arial, sans-serif;
-            background-color: #0f172a;
+            background-color: #0b0f19;
             color: #f8fafc;
             line-height: 1.6;
             padding: 30px 20px;
@@ -26,23 +26,80 @@
             margin: 0 auto;
         }
 
-        header {
+        /* Hero Header Section */
+        header.hero-header {
+            position: relative;
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #1e293b;
+            margin-bottom: 40px;
+            padding: 40px 20px 30px;
+            background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 20px;
+            overflow: hidden;
         }
 
-        h1 {
-            font-size: 26px;
+        header.hero-header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 100px;
+            background: #38bdf8;
+            filter: blur(90px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .header-title-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .live-pulse-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #38bdf8;
+            border-radius: 50%;
+            box-shadow: 0 0 12px #38bdf8;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        h1.hero-title {
+            font-size: 32px;
             font-weight: 700;
-            color: #38bdf8;
-            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
-        p.subtitle {
-            font-size: 14px;
-            color: #94a3b8;
+        .hero-subtitle-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            backdrop-filter: blur(10px);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 13.5px;
+            color: #cbd5e1;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-subtitle-badge strong {
+            color: #38bdf8;
+            font-weight: 600;
         }
 
         .summary-grid {
@@ -157,20 +214,9 @@
             border: 1px solid #4285f4;
         }
 
-        .profit-pos {
-            color: #4ade80;
-            font-weight: 600;
-        }
-
-        .profit-neg {
-            color: #f87171;
-            font-weight: 600;
-        }
-
-        .loading {
-            color: #94a3b8;
-            font-style: italic;
-        }
+        .profit-pos { color: #4ade80; font-weight: 600; }
+        .profit-neg { color: #f87171; font-weight: 600; }
+        .loading { color: #94a3b8; font-style: italic; }
 
         footer {
             text-align: center;
@@ -185,12 +231,20 @@
 <body>
 
     <div class="container">
-        <header>
-            <h1>ระบบติดตามผลตอบแทนการลงทุนเรียลไทม์</h1>
-            <p class="subtitle">NVDA & GOOGL Portfolio | ดึงราคาหุ้นและอัตราแลกเปลี่ยนอัปเดตสดอัตโนมัติ</p>
+        <header class="hero-header">
+            <div class="header-title-container">
+                <span class="live-pulse-dot"></span>
+                <h1 class="hero-title">ระบบติดตามผลตอบแทนการลงทุนเรียลไทม์</h1>
+            </div>
+            <div>
+                <div class="hero-subtitle-badge">
+                    <strong>NVDA & GOOGL Portfolio</strong>
+                    <span>|</span>
+                    <span>ดึงราคาหุ้นและอัตราแลกเปลี่ยนอัปเดตสดอัตโนมัติ</span>
+                </div>
+            </div>
         </header>
 
-        <!-- Top Summary Cards -->
         <div class="summary-grid">
             <div class="card">
                 <div class="card-title">ต้นทุนรวมทั้งหมด</div>
@@ -214,7 +268,6 @@
             </div>
         </div>
 
-        <!-- Realtime Holdings Table -->
         <div class="section-title">
             <span>รายละเอียดการถือครองและกำไร/ขาดทุนรายตัว</span>
             <span class="status-badge" id="update-status">● กำลังดึงข้อมูล...</span>
@@ -269,41 +322,65 @@
 
         const totalCostThb = holdings.NVDA.costThb + holdings.GOOGL.costThb;
 
-        // ดึงราคาหุ้นสากล
+        // ฟังก์ชันป้องกันการดึงข้อมูลค้าง (ตั้งเวลาตัดจบ 8 วินาที)
+        const fetchWithTimeout = async (url, timeout = 8000) => {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(id);
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                return response;
+            } catch (error) {
+                clearTimeout(id);
+                throw error;
+            }
+        };
+
+        // ระบบดึงราคาหุ้นที่มี Proxy สำรอง
         async function fetchSinglePrice(symbol) {
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-            const res = await fetch(proxyUrl);
-            const data = await res.json();
-            const parsed = JSON.parse(data.contents);
-            return parsed.chart.result[0].meta.regularMarketPrice;
+            
+            // ใช้หลาย Proxy สลับกัน หากตัวแรกค้าง จะสลับไปตัวที่สองทันที
+            const proxies = [
+                `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+            ];
+
+            let lastError;
+            for (let proxy of proxies) {
+                try {
+                    const res = await fetchWithTimeout(proxy, 6000);
+                    const data = await res.json();
+                    if (data && data.chart && data.chart.result && data.chart.result[0]) {
+                        return data.chart.result[0].meta.regularMarketPrice;
+                    }
+                } catch (e) {
+                    lastError = e;
+                    console.warn(`Proxy failed for ${symbol}:`, e.message);
+                }
+            }
+            throw new Error(`หมดเวลาเชื่อมต่อตลาดหุ้น: ${lastError.message}`);
         }
 
-        // ดึงอัตราแลกเปลี่ยน USD/THB ปัจจุบันโดยตรง
+        // ดึงอัตราแลกเปลี่ยน
         async function fetchUsdThbRate() {
             try {
-                // ดึงราคาจาก API อัตราแลกเปลี่ยนระดับสากล
-                const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                const res = await fetchWithTimeout('https://api.exchangerate-api.com/v4/latest/USD', 5000);
                 const data = await res.json();
-                if (data && data.rates && data.rates.THB) {
-                    return data.rates.THB;
-                }
+                if (data?.rates?.THB) return data.rates.THB;
             } catch (e) {
-                console.warn("ไม่สามารถดึงจาก ExchangeRate-API ได้ ใช้ช่องทางที่สอง...", e);
+                console.warn("API แลกเปลี่ยนตัวแรกค้าง", e.message);
             }
 
             try {
-                // ช่องทางสำรอง: Frankfurter API (ไม่มีจำกัด CORS)
-                const res2 = await fetch('https://api.frankfurter.app/latest?from=USD&to=THB');
+                const res2 = await fetchWithTimeout('https://api.frankfurter.app/latest?from=USD&to=THB', 5000);
                 const data2 = await res2.json();
-                if (data2 && data2.rates && data2.rates.THB) {
-                    return data2.rates.THB;
-                }
+                if (data2?.rates?.THB) return data2.rates.THB;
             } catch (e) {
-                console.warn("ไม่สามารถดึงอัตราแลกเปลี่ยนสดได้", e);
+                console.warn("API แลกเปลี่ยนสำรองค้าง", e.message);
             }
-
-            throw new Error("Unable to fetch USD/THB rate");
+            throw new Error("ดึงค่าเงินล้มเหลว");
         }
 
         async function fetchPortfolioData() {
@@ -311,43 +388,35 @@
                 document.getElementById('update-status').innerText = '● กำลังอัปเดตราคา...';
                 document.getElementById('update-status').style.color = '#38bdf8';
 
-                // ดึงข้อมูลราคาและอัตราแลกเปลี่ยนพร้อมกัน
                 const [nvdaPrice, googlPrice, usdThbRate] = await Promise.all([
                     fetchSinglePrice('NVDA'),
                     fetchSinglePrice('GOOGL'),
                     fetchUsdThbRate()
                 ]);
 
-                // แสดงผลค่าเงิน USD/THB ล่าสุด
                 document.getElementById('fx-rate-display').innerText = `฿${usdThbRate.toFixed(2)}`;
                 document.getElementById('usd-thb-subtext').innerText = `อัตราแลกเปลี่ยนสด: ฿${usdThbRate.toFixed(2)} / $1 USD`;
 
-                // คำนวณ NVDA
                 const nvdaValThb = holdings.NVDA.shares * nvdaPrice * usdThbRate;
                 const nvdaPlThb = nvdaValThb - holdings.NVDA.costThb;
                 const nvdaPlPct = (nvdaPlThb / holdings.NVDA.costThb) * 100;
 
-                // คำนวณ GOOGL
                 const googlValThb = holdings.GOOGL.shares * googlPrice * usdThbRate;
                 const googlPlThb = googlValThb - holdings.GOOGL.costThb;
                 const googlPlPct = (googlPlThb / holdings.GOOGL.costThb) * 100;
 
-                // คำนวณ พอร์ตรวม
                 const totalValThb = nvdaValThb + googlValThb;
                 const totalPlThb = totalValThb - totalCostThb;
                 const totalPlPct = (totalPlThb / totalCostThb) * 100;
 
-                // แสดงผล NVDA
                 document.getElementById('price-nvda').innerText = `$${nvdaPrice.toFixed(2)}`;
                 document.getElementById('val-nvda').innerText = `฿${nvdaValThb.toFixed(2)}`;
                 renderProfitLoss('pl-nvda', 'pl-pct-nvda', nvdaPlThb, nvdaPlPct);
 
-                // แสดงผล GOOGL
                 document.getElementById('price-googl').innerText = `$${googlPrice.toFixed(2)}`;
                 document.getElementById('val-googl').innerText = `฿${googlValThb.toFixed(2)}`;
                 renderProfitLoss('pl-googl', 'pl-pct-googl', googlPlThb, googlPlPct);
 
-                // แสดงผล พอร์ตรวม
                 document.getElementById('total-portfolio-value').innerText = `฿${totalValThb.toFixed(2)}`;
                 const totalPlElem = document.getElementById('total-profit-loss');
                 const totalPlPctElem = document.getElementById('total-profit-percent');
@@ -371,8 +440,8 @@
                 document.getElementById('last-updated').innerText = `อัปเดตข้อมูลล่าสุด: ${now.toLocaleTimeString('th-TH')} (${now.toLocaleDateString('th-TH')})`;
 
             } catch (error) {
-                console.error("Error fetching portfolio data:", error);
-                document.getElementById('update-status').innerText = '● ไม่สามารถดึงราคาล่าสุดได้';
+                console.error("Fetch Error:", error);
+                document.getElementById('update-status').innerText = '● อัปเดตราคาไม่สำเร็จ (รอรอบถัดไป)';
                 document.getElementById('update-status').style.color = '#f87171';
             }
         }
@@ -394,6 +463,7 @@
             }
         }
 
+        // โหลดข้อมูลครั้งแรก และตั้งเวลาอัปเดตซ้ำทุก 30 วินาที
         fetchPortfolioData();
         setInterval(fetchPortfolioData, 30000);
     </script>
