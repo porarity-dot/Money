@@ -3,511 +3,399 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investment Portfolio Dashboard - Realtime Tracker</title>
+    <title>Smart Investment Portfolio Dashboard</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Sarabun', 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Sarabun', sans-serif;
             background-color: #0b0f19;
             color: #f8fafc;
             line-height: 1.6;
             padding: 30px 20px;
         }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1100px; margin: 0 auto; }
 
         /* Premium Header */
         header.hero-header {
-            position: relative;
-            text-align: center;
-            margin-bottom: 35px;
-            padding: 45px 25px 35px;
+            text-align: center; margin-bottom: 35px; padding: 40px 20px;
             background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            overflow: hidden;
+            border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 24px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
         }
-
-        header.hero-header::before {
-            content: '';
-            position: absolute;
-            top: -60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 350px;
-            height: 120px;
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(56, 189, 248, 0) 70%);
-            filter: blur(50px);
-            pointer-events: none;
-        }
-
         .header-top-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #38bdf8;
-            font-weight: 600;
-            margin-bottom: 15px;
-            letter-spacing: 0.5px;
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 5px 14px; border-radius: 20px; font-size: 12px; color: #38bdf8; font-weight: 600; margin-bottom: 15px;
         }
-
         .live-pulse-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #38bdf8;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #38bdf8;
+            width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%;
             animation: pulse 2s infinite;
         }
-
         @keyframes pulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
         }
-
         h1.hero-title {
-            font-size: 30px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-            margin-bottom: 12px;
+            font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px;
         }
 
-        .hero-subtitle-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 13.5px;
-            color: #cbd5e1;
+        /* Layout Grid */
+        .dashboard-grid {
+            display: grid; grid-template-columns: 1fr 320px; gap: 20px;
         }
+        @media (max-width: 800px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
-        .hero-subtitle-badge strong {
-            color: #f8fafc;
-            font-weight: 600;
-        }
-
+        /* Summary Cards */
         .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;
         }
-
         .card {
-            background-color: #1e293b;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #334155;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            background-color: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155;
         }
+        .card-title { font-size: 12px; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
+        .card-value { font-size: 20px; font-weight: 700; color: #f8fafc; }
+        .card-subtext { font-size: 12px; color: #38bdf8; margin-top: 4px; }
 
-        .card-title {
-            font-size: 12px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .card-value {
-            font-size: 22px;
-            font-weight: 700;
-            color: #f8fafc;
-        }
-
-        .card-subtext {
-            font-size: 12px;
-            color: #38bdf8;
-            margin-top: 4px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #f1f5f9;
-            margin-bottom: 16px;
-            padding-left: 10px;
-            border-left: 4px solid #38bdf8;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .refresh-btn {
-            background-color: #38bdf8;
-            color: #0f172a;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        .refresh-btn:hover {
-            background-color: #0ea5e9;
-            transform: scale(1.05);
-        }
-
-        .status-badge {
-            font-size: 12px;
-            font-weight: 400;
-            color: #4ade80;
-            background: rgba(74, 222, 128, 0.1);
-            padding: 4px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(74, 222, 128, 0.3);
-        }
-
-        .table-container {
-            overflow-x: auto;
-            background-color: #1e293b;
-            border-radius: 10px;
-            border: 1px solid #334155;
-            margin-bottom: 20px;
-        }
-
-        table.data-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        table.data-table th, table.data-table td {
-            padding: 14px 16px;
-            font-size: 14px;
-        }
-
-        table.data-table th {
-            background-color: #0f172a;
-            color: #94a3b8;
-            font-weight: 600;
-            border-bottom: 1px solid #334155;
-        }
-
-        table.data-table td {
-            border-bottom: 1px solid #334155;
-            color: #e2e8f0;
-        }
-
-        table.data-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .tag {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .tag-nvda { background-color: rgba(118, 185, 0, 0.2); color: #76b900; border: 1px solid #76b900; }
-        .tag-googl { background-color: rgba(66, 133, 244, 0.2); color: #4285f4; border: 1px solid #4285f4; }
-        
+        /* Table */
+        .section-title { font-size: 16px; font-weight: 600; color: #f1f5f9; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #38bdf8; padding-left: 10px; }
+        .table-container { overflow-x: auto; background-color: #1e293b; border-radius: 10px; border: 1px solid #334155; margin-bottom: 20px; }
+        table.data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+        table.data-table th, table.data-table td { padding: 12px 14px; border-bottom: 1px solid #334155; }
+        table.data-table th { background-color: #0f172a; color: #94a3b8; }
         .profit-pos { color: #4ade80 !important; font-weight: 600; }
         .profit-neg { color: #f87171 !important; font-weight: 600; }
+        .delete-btn { color: #f87171; background: none; border: none; cursor: pointer; font-size: 12px; text-decoration: underline; }
 
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #1e293b;
-            font-size: 12px;
-            color: #64748b;
-        }
+        /* Sidebar Panels */
+        .panel { background-color: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; margin-bottom: 20px; }
+        .panel h3 { font-size: 15px; color: #38bdf8; margin-bottom: 15px; }
+        
+        /* Form Add Stock */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #475569; background-color: #0f172a; color: #fff; font-family: inherit; }
+        .btn-submit { width: 100%; background-color: #38bdf8; color: #0f172a; border: none; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { background-color: #0ea5e9; }
+        .form-hint { font-size: 11px; color: #64748b; margin-top: 4px; }
+
+        /* AI Recommendation Box */
+        .ai-box { background: linear-gradient(135deg, rgba(56,189,248,0.1) 0%, rgba(15,23,42,0) 100%); border: 1px solid #38bdf8; }
+        .ai-title { display: flex; align-items: center; gap: 8px; color: #38bdf8; font-weight: 700; margin-bottom: 10px; font-size: 15px; }
+        .ai-content { font-size: 13.5px; color: #e2e8f0; }
+        .highlight-stock { display: inline-block; padding: 2px 8px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 4px; font-weight: bold; margin: 0 4px; }
+
+        footer { text-align: center; margin-top: 20px; font-size: 12px; color: #64748b; }
+        .refresh-btn { background-color: #334155; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Premium Header -->
         <header class="hero-header">
             <div class="header-top-tag">
                 <span class="live-pulse-dot"></span>
-                <span>REALTIME MARKET DATA</span>
+                <span>SMART PORTFOLIO & AI DCA</span>
             </div>
-            <h1 class="hero-title">ระบบติดตามผลตอบแทนการลงทุน</h1>
-            <div class="hero-subtitle-badge">
-                <strong>NVDA & GOOGL Portfolio</strong>
-                <span style="color: #475569;">•</span>
-                <span>อัปเดตราคาหุ้นและค่าเงินอัตโนมัติ</span>
-            </div>
+            <h1 class="hero-title">ระบบติดตามและวิเคราะห์การลงทุน</h1>
         </header>
 
         <div class="summary-grid">
             <div class="card">
                 <div class="card-title">ต้นทุนรวมทั้งหมด</div>
-                <div class="card-value">฿999.92</div>
-                <div class="card-subtext">หุ้นละ 499.96 บาท ($15.05)</div>
+                <div class="card-value" id="summary-cost">฿0.00</div>
             </div>
             <div class="card">
-                <div class="card-title">อัตราแลกเปลี่ยนปัจจุบัน</div>
-                <div class="card-value" id="fx-rate-display" style="color: #f59e0b;">฿--.--</div>
-                <div class="card-subtext">อ้างอิงอัตราแลกเปลี่ยนสด (Interbank)</div>
+                <div class="card-title">อัตราแลกเปลี่ยน (USD/THB)</div>
+                <div class="card-value" id="fx-rate-display" style="color: #f59e0b;">กำลังดึงข้อมูล...</div>
             </div>
             <div class="card">
                 <div class="card-title">มูลค่าพอร์ตปัจจุบัน</div>
-                <div class="card-value" id="total-portfolio-value" style="color: #38bdf8;">฿--.--</div>
-                <div class="card-subtext" id="usd-thb-subtext">คำนวณจากราคาตลาด</div>
+                <div class="card-value" id="summary-value" style="color: #38bdf8;">฿0.00</div>
             </div>
             <div class="card">
                 <div class="card-title">กำไร/ขาดทุน รวม</div>
-                <div class="card-value" id="total-profit-loss">฿--.--</div>
-                <div class="card-subtext" id="total-profit-percent">--%</div>
+                <div class="card-value" id="summary-pl">฿0.00</div>
+                <div class="card-subtext" id="summary-pl-pct">0.00%</div>
             </div>
         </div>
 
-        <div class="section-title">
-            <span>รายละเอียดการถือครองและกำไร/ขาดทุน</span>
-            <div class="header-actions">
-                <button class="refresh-btn" onclick="updateDashboard()">อัปเดตราคาตอนนี้</button>
-                <span class="status-badge" id="update-status">● รอการดึงข้อมูล</span>
+        <div class="dashboard-grid">
+            <!-- Left: Table -->
+            <div>
+                <div class="section-title">
+                    <span>รายการถือครองปัจจุบัน</span>
+                    <div>
+                        <button class="refresh-btn" onclick="updateDashboard()">↻ อัปเดตราคา</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>หุ้น</th>
+                                <th>จำนวน</th>
+                                <th>ต้นทุนรวม (฿)</th>
+                                <th>ราคาตลาด</th>
+                                <th>มูลค่าปัจจุบัน (฿)</th>
+                                <th>กำไร/ขาดทุน (฿)</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolio-body">
+                            <!-- JS จะเติมข้อมูลตรงนี้ -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="font-size: 12px; color: #64748b; margin-top: -10px; margin-bottom: 20px;" id="update-status">สถานะ: รอโหลดข้อมูล...</div>
+            </div>
+
+            <!-- Right: Forms & AI -->
+            <div>
+                <!-- Add Stock Form -->
+                <div class="panel">
+                    <h3>+ บันทึกการซื้อหุ้นเพิ่ม</h3>
+                    <div class="form-group">
+                        <label>สัญลักษณ์หุ้น (Ticker)</label>
+                        <input type="text" id="input-symbol" placeholder="เช่น NVDA, GOOGL หรือ PTT.BK" style="text-transform: uppercase;">
+                        <div class="form-hint">*หุ้นไทยต้องต่อท้ายด้วย .BK เสมอ เช่น AOT.BK</div>
+                    </div>
+                    <div class="form-group">
+                        <label>จำนวนหุ้นที่ซื้อ (Shares)</label>
+                        <input type="number" id="input-shares" placeholder="เช่น 0.05 หรือ 100" step="any">
+                    </div>
+                    <div class="form-group">
+                        <label>เงินลงทุนสุทธิ (บาท)</label>
+                        <input type="number" id="input-cost" placeholder="ต้นทุนที่จ่ายไปเป็นเงินบาท" step="any">
+                    </div>
+                    <button class="btn-submit" onclick="addStock()">บันทึกข้อมูล</button>
+                </div>
+
+                <!-- AI Recommendation Box -->
+                <div class="panel ai-box">
+                    <div class="ai-title">💡 ระบบแนะนำการลงทุน (1,000 บาท)</div>
+                    <div class="ai-content" id="ai-recommendation">
+                        กำลังวิเคราะห์ข้อมูลพอร์ตของคุณ...
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>หุ้น</th>
-                        <th>จำนวนหุ้น</th>
-                        <th>ต้นทุน (THB)</th>
-                        <th>ราคาปัจจุบัน (USD)</th>
-                        <th>มูลค่าพอร์ต (THB)</th>
-                        <th>กำไร/ขาดทุน (THB)</th>
-                        <th>% กำไร</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="tag tag-nvda">NVDA</span></td>
-                        <td>0.0668888</td>
-                        <td>฿499.96</td>
-                        <td id="price-nvda">$--.--</td>
-                        <td id="val-nvda">฿--.--</td>
-                        <td id="pl-nvda">฿--.--</td>
-                        <td id="pl-pct-nvda">--%</td>
-                    </tr>
-                    <tr>
-                        <td><span class="tag tag-googl">GOOGL</span></td>
-                        <td>0.0435436</td>
-                        <td>฿499.96</td>
-                        <td id="price-googl">$--.--</td>
-                        <td id="val-googl">฿--.--</td>
-                        <td id="pl-googl">฿--.--</td>
-                        <td id="pl-pct-googl">--%</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <footer>
-            <p id="last-updated">อัปเดตข้อมูลล่าสุด: ยังไม่มีข้อมูล</p>
-        </footer>
+        
+        <footer>ข้อมูลอัปเดตล่าสุด: <span id="last-updated">-</span> | บันทึกข้อมูลด้วยระบบเบราว์เซอร์ของคุณเอง</footer>
     </div>
 
     <script>
-        const holdings = {
-            NVDA: { shares: 0.0668888, costThb: 499.96 },
-            GOOGL: { shares: 0.0435436, costThb: 499.96 }
+        // โหลดข้อมูลจาก LocalStorage ถ้าไม่มีให้ใช้ค่าเริ่มต้น
+        const defaultHoldings = {
+            'NVDA': { shares: 0.0668888, costThb: 499.96 },
+            'GOOGL': { shares: 0.0435436, costThb: 499.96 }
         };
-        const totalCostThb = holdings.NVDA.costThb + holdings.GOOGL.costThb;
+        
+        let holdings = JSON.parse(localStorage.getItem('mySmartPortfolio')) || defaultHoldings;
+        let marketData = {}; // เก็บข้อมูลราคาล่าสุด
+        let usdThbRate = 34.50;
 
-        // ข้อมูลตั้งต้น (ป้องกันหน้าเว็บค้าง จะใช้ราคานี้แทนถ้า API ล่มทั้งหมด)
-        let latestData = {
-            NVDA: 130.00,
-            GOOGL: 175.00,
-            USDTHB: 34.50
-        };
+        // บันทึกและดึงข้อมูลใหม่
+        function addStock() {
+            let symbol = document.getElementById('input-symbol').value.toUpperCase().trim();
+            const shares = parseFloat(document.getElementById('input-shares').value);
+            const costThb = parseFloat(document.getElementById('input-cost').value);
 
-        // ฟังก์ชันดึงหุ้นพร้อม Proxy สำรอง 3 ชั้น
+            if (!symbol || isNaN(shares) || isNaN(costThb) || shares <= 0 || costThb <= 0) {
+                alert("กรุณากรอกข้อมูลให้ครบและถูกต้อง");
+                return;
+            }
+
+            // ถ้ามีหุ้นอยู่แล้วให้บวกเพิ่ม ถ้าไม่มีให้สร้างใหม่
+            if (holdings[symbol]) {
+                holdings[symbol].shares += shares;
+                holdings[symbol].costThb += costThb;
+            } else {
+                holdings[symbol] = { shares: shares, costThb: costThb };
+            }
+
+            localStorage.setItem('mySmartPortfolio', JSON.stringify(holdings));
+            
+            // ล้างฟอร์ม
+            document.getElementById('input-symbol').value = '';
+            document.getElementById('input-shares').value = '';
+            document.getElementById('input-cost').value = '';
+
+            updateDashboard();
+        }
+
+        // ลบหุ้น
+        function removeStock(symbol) {
+            if (confirm(`คุณต้องการลบ ${symbol} ออกจากพอร์ตใช่หรือไม่?`)) {
+                delete holdings[symbol];
+                localStorage.setItem('mySmartPortfolio', JSON.stringify(holdings));
+                updateDashboard();
+            }
+        }
+
+        // ดึงราคา
         async function fetchStockPrice(symbol) {
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
-            
             const proxies = [
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-                `https://corsproxy.io/?${encodeURIComponent(url)}`
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
             ];
-
             for (const proxy of proxies) {
                 try {
-                    const res = await fetch(proxy, { cache: "no-store" });
-                    if (!res.ok) continue;
+                    const res = await fetch(proxy);
                     const data = await res.json();
-                    const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-                    if (price) return price;
-                } catch (e) {
-                    console.warn(`Proxy failed for ${symbol}:`, proxy);
-                }
+                    return data.chart.result[0].meta.regularMarketPrice;
+                } catch (e) {}
             }
-            throw new Error(`หมดหนทางดึงราคา ${symbol}`);
+            return null; // ถ้าดึงไม่ได้
         }
 
-        // ฟังก์ชันดึงค่าเงินพร้อม Proxy สำรอง
         async function fetchUsdThbRate() {
-            const fxApis = [
-                'https://open.er-api.com/v6/latest/USD',
-                'https://api.exchangerate-api.com/v4/latest/USD',
-                'https://api.frankfurter.app/latest?from=USD&to=THB'
-            ];
-
-            for (const api of fxApis) {
-                try {
-                    const res = await fetch(api);
-                    if (!res.ok) continue;
-                    const data = await res.json();
-                    if (data?.rates?.THB) return data.rates.THB;
-                } catch (e) {
-                    console.warn("FX API failed:", api);
-                }
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                return data.rates.THB;
+            } catch (e) {
+                return 34.50;
             }
-            throw new Error("หมดหนทางดึงค่าเงิน");
         }
 
-        // ฟังก์ชันอัปเดต Dashboard หลัก
         async function updateDashboard() {
-            const statusEl = document.getElementById('update-status');
-            statusEl.innerText = '● กำลังดึงข้อมูล...';
-            statusEl.style.color = '#f59e0b'; // สีส้มเตือนว่ากำลังทำ
-
-            let hasError = false;
-
-            // 1. ลองดึง NVDA
-            try { 
-                latestData.NVDA = await fetchStockPrice('NVDA'); 
-            } catch (e) { hasError = true; }
-
-            // 2. ลองดึง GOOGL
-            try { 
-                latestData.GOOGL = await fetchStockPrice('GOOGL'); 
-            } catch (e) { hasError = true; }
-
-            // 3. ลองดึง ค่าเงิน
-            try { 
-                latestData.USDTHB = await fetchUsdThbRate(); 
-            } catch (e) { hasError = true; }
-
-            // อัปเดตสถานะ (ถ้าผิดพลาดบางส่วนจะยังคำนวณต่อด้วยราคาล่าสุดเท่าที่มี)
-            if (hasError) {
-                statusEl.innerText = '● ขัดข้องบางส่วน (แสดงราคาล่าสุด)';
-                statusEl.style.color = '#f87171'; // สีแดง
-            } else {
-                statusEl.innerText = '● อัปเดตเรียลไทม์สำเร็จ';
-                statusEl.style.color = '#4ade80'; // สีเขียว
-            }
-
-            // คำนวณและเรนเดอร์ UI ทันที
-            renderUI();
-        }
-
-        // แยกฟังก์ชันเรนเดอร์ UI เพื่อไม่ให้เว็บค้าง
-        function renderUI() {
-            const usdThbRate = latestData.USDTHB;
-            const nvdaPrice = latestData.NVDA;
-            const googlPrice = latestData.GOOGL;
-
-            // อัปเดตการ์ดค่าเงิน
-            document.getElementById('fx-rate-display').innerText = `฿${usdThbRate.toFixed(2)}`;
-            document.getElementById('usd-thb-subtext').innerText = `อัตราแลกเปลี่ยน: ฿${usdThbRate.toFixed(2)} / $1 USD`;
-
-            // คำนวณ NVDA
-            const nvdaValThb = holdings.NVDA.shares * nvdaPrice * usdThbRate;
-            const nvdaPlThb = nvdaValThb - holdings.NVDA.costThb;
-            const nvdaPlPct = (nvdaPlThb / holdings.NVDA.costThb) * 100;
-
-            // คำนวณ GOOGL
-            const googlValThb = holdings.GOOGL.shares * googlPrice * usdThbRate;
-            const googlPlThb = googlValThb - holdings.GOOGL.costThb;
-            const googlPlPct = (googlPlThb / holdings.GOOGL.costThb) * 100;
-
-            // คำนวณ พอร์ตรวม
-            const totalValThb = nvdaValThb + googlValThb;
-            const totalPlThb = totalValThb - totalCostThb;
-            const totalPlPct = (totalPlThb / totalCostThb) * 100;
-
-            // เขียนข้อมูล NVDA ลงตาราง
-            document.getElementById('price-nvda').innerText = `$${nvdaPrice.toFixed(2)}`;
-            document.getElementById('val-nvda').innerText = `฿${nvdaValThb.toFixed(2)}`;
-            applyColor('pl-nvda', nvdaPlThb, `฿`);
-            applyColor('pl-pct-nvda', nvdaPlPct, `%`);
-
-            // เขียนข้อมูล GOOGL ลงตาราง
-            document.getElementById('price-googl').innerText = `$${googlPrice.toFixed(2)}`;
-            document.getElementById('val-googl').innerText = `฿${googlValThb.toFixed(2)}`;
-            applyColor('pl-googl', googlPlThb, `฿`);
-            applyColor('pl-pct-googl', googlPlPct, `%`);
-
-            // เขียนข้อมูล พอร์ตรวม
-            document.getElementById('total-portfolio-value').innerText = `฿${totalValThb.toFixed(2)}`;
-            applyColor('total-profit-loss', totalPlThb, `฿`);
-            applyColor('total-profit-percent', totalPlPct, `%`);
-
-            // ลงเวลา
-            const now = new Date();
-            document.getElementById('last-updated').innerText = `ข้อมูล ณ เวลา: ${now.toLocaleTimeString('th-TH')} น.`;
-        }
-
-        // ฟังก์ชันช่วยใส่สีเขียว-แดง
-        function applyColor(elementId, value, prefix) {
-            const el = document.getElementById(elementId);
-            const isPct = prefix === '%';
+            document.getElementById('update-status').innerText = 'สถานะ: กำลังอัปเดตราคาล่าสุดจากตลาด...';
+            document.getElementById('update-status').style.color = '#f59e0b';
             
-            let formattedValue = '';
-            if(isPct) {
-                formattedValue = `${Math.abs(value).toFixed(2)}%`;
-            } else {
-                formattedValue = `฿${Math.abs(value).toFixed(2)}`;
+            usdThbRate = await fetchUsdThbRate();
+            document.getElementById('fx-rate-display').innerText = `฿${usdThbRate.toFixed(2)}`;
+
+            let totalCost = 0;
+            let totalValue = 0;
+            let analysisData = [];
+
+            const tbody = document.getElementById('portfolio-body');
+            tbody.innerHTML = ''; // เคลียร์ตารางเดิม
+
+            const symbols = Object.keys(holdings);
+            
+            if (symbols.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">ยังไม่มีหุ้นในพอร์ต กรุณาเพิ่มหุ้นด้านขวา</td></tr>`;
+                document.getElementById('update-status').innerText = 'สถานะ: พร้อมใช้งาน';
+                renderSummary(0, 0);
+                document.getElementById('ai-recommendation').innerHTML = 'เพิ่มหุ้นในพอร์ตอย่างน้อย 1 ตัว เพื่อให้ระบบแนะนำการลงทุน';
+                return;
             }
 
-            if (value >= 0) {
-                el.innerText = `+${formattedValue}`;
-                el.className = isPct ? 'card-subtext profit-pos' : 'profit-pos';
-                if(el.tagName === 'DIV' && !isPct) el.className = 'card-value profit-pos';
-            } else {
-                el.innerText = `-${formattedValue}`;
-                el.className = isPct ? 'card-subtext profit-neg' : 'profit-neg';
-                if(el.tagName === 'DIV' && !isPct) el.className = 'card-value profit-neg';
+            // ดึงราคาทุกตัว
+            for (const symbol of symbols) {
+                const isThaiStock = symbol.endsWith('.BK');
+                let price = await fetchStockPrice(symbol);
+                
+                // ถ้าดึงไม่ได้ ให้ใช้ราคาที่เคยจำไว้ (ถ้ามี) หรือ 0
+                if (!price) price = marketData[symbol] || 0;
+                marketData[symbol] = price; // จำราคาล่าสุดไว้
+
+                const data = holdings[symbol];
+                totalCost += data.costThb;
+                
+                // คำนวณมูลค่า (หุ้นไทยไม่ต้องคูณค่าเงิน, หุ้นนอกต้องคูณ USDTHB)
+                let currentValThb = 0;
+                let priceDisplay = '';
+                
+                if (isThaiStock) {
+                    currentValThb = data.shares * price;
+                    priceDisplay = `฿${price.toFixed(2)}`;
+                } else {
+                    currentValThb = data.shares * price * usdThbRate;
+                    priceDisplay = `$${price.toFixed(2)}`;
+                }
+                
+                totalValue += currentValThb;
+
+                const plThb = currentValThb - data.costThb;
+                const plPct = (plThb / data.costThb) * 100;
+
+                // เก็บข้อมูลให้ AI วิเคราะห์
+                analysisData.push({
+                    symbol: symbol,
+                    value: currentValThb,
+                    plPct: plPct,
+                    isThai: isThaiStock
+                });
+
+                // สร้างแถวตาราง
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${symbol}</strong></td>
+                    <td>${data.shares.toFixed(4)}</td>
+                    <td>฿${data.costThb.toFixed(2)}</td>
+                    <td>${price > 0 ? priceDisplay : 'N/A'}</td>
+                    <td>฿${currentValThb.toFixed(2)}</td>
+                    <td class="${plThb >= 0 ? 'profit-pos' : 'profit-neg'}">
+                        ${plThb >= 0 ? '+' : ''}฿${plThb.toFixed(2)} <br>
+                        <span style="font-size: 11px;">(${plThb >= 0 ? '+' : ''}${plPct.toFixed(2)}%)</span>
+                    </td>
+                    <td><button class="delete-btn" onclick="removeStock('${symbol}')">ลบ</button></td>
+                `;
+                tbody.appendChild(tr);
             }
+
+            renderSummary(totalCost, totalValue);
+            generateRecommendation(analysisData, totalValue);
+
+            document.getElementById('update-status').innerText = 'สถานะ: ข้อมูลล่าสุดตรงกับตลาด';
+            document.getElementById('update-status').style.color = '#4ade80';
+            document.getElementById('last-updated').innerText = new Date().toLocaleTimeString('th-TH');
         }
 
-        // รันครั้งแรกทันทีที่เปิดเว็บ
-        updateDashboard();
+        function renderSummary(cost, value) {
+            document.getElementById('summary-cost').innerText = `฿${cost.toFixed(2)}`;
+            document.getElementById('summary-value').innerText = `฿${value.toFixed(2)}`;
+            
+            const pl = value - cost;
+            const plPct = cost > 0 ? (pl / cost) * 100 : 0;
+            
+            const plEl = document.getElementById('summary-pl');
+            const pctEl = document.getElementById('summary-pl-pct');
+            
+            plEl.innerText = `${pl >= 0 ? '+' : ''}฿${pl.toFixed(2)}`;
+            pctEl.innerText = `${pl >= 0 ? '+' : ''}${plPct.toFixed(2)}%`;
+            
+            plEl.className = pl >= 0 ? 'card-value profit-pos' : 'card-value profit-neg';
+            pctEl.className = pl >= 0 ? 'card-subtext profit-pos' : 'card-subtext profit-neg';
+        }
 
-        // รันอัตโนมัติทุกๆ 60 วินาที
+        // ระบบ AI แนะนำ
+        function generateRecommendation(stocks, totalPortfolioValue) {
+            if (stocks.length === 0) return;
+
+            // หุ้นที่ติดลบหนักที่สุด (เพื่อเฉลี่ยต้นทุน)
+            let worstPerformer = stocks.reduce((min, stock) => stock.plPct < min.plPct ? stock : min, stocks[0]);
+            
+            // หุ้นที่มีสัดส่วนน้อยที่สุด (เพื่อ Rebalance)
+            let lowestWeight = stocks.reduce((min, stock) => stock.value < min.value ? stock : min, stocks[0]);
+
+            let html = '';
+
+            // ตรรกะการแนะนำ
+            if (worstPerformer.plPct < -5) {
+                html += `กลยุทธ์ <strong>Average Down (ถัวเฉลี่ยลดต้นทุน)</strong>:<br>`;
+                html += `ขณะนี้ <span class="highlight-stock">${worstPerformer.symbol}</span> ปรับฐานลงมา (${worstPerformer.plPct.toFixed(2)}%) 
+                แนะนำให้แบ่งเงิน 1,000 บาทเข้าซื้อเพื่อสะสมในราคาถูกและดึงต้นทุนเฉลี่ยให้ต่ำลง`;
+            } else {
+                html += `กลยุทธ์ <strong>Portfolio Rebalancing (ปรับสมดุล)</strong>:<br>`;
+                html += `พอร์ตของคุณมีกำไร/ทรงตัวได้ดี แนะนำให้นำเงิน 1,000 บาท ซื้อ <span class="highlight-stock">${lowestWeight.symbol}</span> 
+                เนื่องจากปัจจุบันมีสัดส่วนมูลค่าน้อยที่สุดในพอร์ต เพื่อรักษาสมดุลความเสี่ยงระยะยาว`;
+            }
+
+            html += `<br><br><span style="font-size:11px; color:#94a3b8;">*คำแนะนำนี้คำนวณจากสัดส่วนและต้นทุนของหุ้นในพอร์ตปัจจุบันเท่านั้น ไม่ใช่คำแนะนำให้ซื้อขายตามสภาวะตลาดรวม</span>`;
+            
+            document.getElementById('ai-recommendation').innerHTML = html;
+        }
+
+        // รันครั้งแรก
+        updateDashboard();
         setInterval(updateDashboard, 60000);
     </script>
 </body>
