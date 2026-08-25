@@ -45,7 +45,7 @@
 
         /* Layout Grid */
         .dashboard-grid {
-            display: grid; grid-template-columns: 1fr 320px; gap: 20px;
+            display: grid; grid-template-columns: 1fr 340px; gap: 20px;
         }
         @media (max-width: 800px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
@@ -85,8 +85,8 @@
         /* AI Recommendation Box */
         .ai-box { background: linear-gradient(135deg, rgba(56,189,248,0.1) 0%, rgba(15,23,42,0) 100%); border: 1px solid #38bdf8; }
         .ai-title { display: flex; align-items: center; gap: 8px; color: #38bdf8; font-weight: 700; margin-bottom: 10px; font-size: 15px; }
-        .ai-content { font-size: 13.5px; color: #e2e8f0; }
-        .highlight-stock { display: inline-block; padding: 2px 8px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 4px; font-weight: bold; margin: 0 4px; }
+        .ai-content { font-size: 13.5px; color: #e2e8f0; line-height: 1.7; }
+        .highlight-stock { display: inline-block; padding: 2px 8px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-radius: 4px; font-weight: bold; margin: 0 2px; }
 
         footer { text-align: center; margin-top: 20px; font-size: 12px; color: #64748b; }
         .refresh-btn { background-color: #334155; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
@@ -98,7 +98,7 @@
         <header class="hero-header">
             <div class="header-top-tag">
                 <span class="live-pulse-dot"></span>
-                <span>SMART PORTFOLIO & AI DCA</span>
+                <span>SMART PORTFOLIO & AI DCA ADVISOR</span>
             </div>
             <h1 class="hero-title">ระบบติดตามและวิเคราะห์การลงทุน</h1>
         </header>
@@ -160,8 +160,8 @@
                     <h3>+ บันทึกการซื้อหุ้นเพิ่ม</h3>
                     <div class="form-group">
                         <label>สัญลักษณ์หุ้น (Ticker)</label>
-                        <input type="text" id="input-symbol" placeholder="เช่น NVDA, GOOGL หรือ PTT.BK" style="text-transform: uppercase;">
-                        <div class="form-hint">*หุ้นไทยต้องต่อท้ายด้วย .BK เสมอ เช่น AOT.BK</div>
+                        <input type="text" id="input-symbol" placeholder="เช่น NVDA, PTT.BK" style="text-transform: uppercase;">
+                        <div class="form-hint">*หุ้นไทยต้องต่อท้ายด้วย .BK เสมอ</div>
                     </div>
                     <div class="form-group">
                         <label>จำนวนหุ้นที่ซื้อ (Shares)</label>
@@ -176,9 +176,9 @@
 
                 <!-- AI Recommendation Box -->
                 <div class="panel ai-box">
-                    <div class="ai-title">💡 ระบบแนะนำการลงทุน (1,000 บาท)</div>
+                    <div class="ai-title">🤖 AI วิเคราะห์การออม 1,000 บาทถัดไป</div>
                     <div class="ai-content" id="ai-recommendation">
-                        กำลังวิเคราะห์ข้อมูลพอร์ตของคุณ...
+                        กำลังประเมินพอร์ตและคัดเลือกหุ้นน่าลงทุน...
                     </div>
                 </div>
             </div>
@@ -188,17 +188,25 @@
     </div>
 
     <script>
-        // โหลดข้อมูลจาก LocalStorage ถ้าไม่มีให้ใช้ค่าเริ่มต้น
         const defaultHoldings = {
             'NVDA': { shares: 0.0668888, costThb: 499.96 },
             'GOOGL': { shares: 0.0435436, costThb: 499.96 }
         };
         
         let holdings = JSON.parse(localStorage.getItem('mySmartPortfolio')) || defaultHoldings;
-        let marketData = {}; // เก็บข้อมูลราคาล่าสุด
+        let marketData = {}; 
         let usdThbRate = 34.50;
 
-        // บันทึกและดึงข้อมูลใหม่
+        // คลังหุ้นแนะนำเพิ่มเติม (หุ้นนอก / หุ้นไทยพื้นฐานดี)
+        const candidateStocks = [
+            { symbol: 'MSFT', name: 'Microsoft (สหรัฐฯ)', type: 'Growth / Cloud', note: 'ผู้นำด้าน Cloud และ AI Enterprise ความมั่นคงสูง' },
+            { symbol: 'AAPL', name: 'Apple (สหรัฐฯ)', type: 'Consumer Tech', note: 'แบรนด์แข็งแกร่ง กระแสเงินสดมหาศาล' },
+            { symbol: 'AMZN', name: 'Amazon (สหรัฐฯ)', type: 'E-Commerce / Cloud', note: 'ผู้นำค้าปลีกออนไลน์และโครงสร้างพื้นฐานคลาวด์' },
+            { symbol: 'CPALL.BK', name: 'ซีพี All (ไทย)', type: 'Consumer / Retail', note: 'หุ้นค้าปลีกพื้นฐานแกร่งในประเทศ' },
+            { symbol: 'BDMS.BK', name: 'กรุงเทพดุสิตเวชการ (ไทย)', type: 'Healthcare', note: 'หุ้นกลุ่มโรงพยาบาลเติบโตสม่ำเสมอ' },
+            { symbol: 'ADVANC.BK', name: 'แอดวานซ์ อินโฟร์ (ไทย)', type: 'Telecom / Dividend', note: 'ผู้นำสื่อสาร ปันผลสม่ำเสมอ' }
+        ];
+
         function addStock() {
             let symbol = document.getElementById('input-symbol').value.toUpperCase().trim();
             const shares = parseFloat(document.getElementById('input-shares').value);
@@ -209,7 +217,6 @@
                 return;
             }
 
-            // ถ้ามีหุ้นอยู่แล้วให้บวกเพิ่ม ถ้าไม่มีให้สร้างใหม่
             if (holdings[symbol]) {
                 holdings[symbol].shares += shares;
                 holdings[symbol].costThb += costThb;
@@ -218,8 +225,6 @@
             }
 
             localStorage.setItem('mySmartPortfolio', JSON.stringify(holdings));
-            
-            // ล้างฟอร์ม
             document.getElementById('input-symbol').value = '';
             document.getElementById('input-shares').value = '';
             document.getElementById('input-cost').value = '';
@@ -227,7 +232,6 @@
             updateDashboard();
         }
 
-        // ลบหุ้น
         function removeStock(symbol) {
             if (confirm(`คุณต้องการลบ ${symbol} ออกจากพอร์ตใช่หรือไม่?`)) {
                 delete holdings[symbol];
@@ -236,7 +240,6 @@
             }
         }
 
-        // ดึงราคา
         async function fetchStockPrice(symbol) {
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
             const proxies = [
@@ -250,7 +253,7 @@
                     return data.chart.result[0].meta.regularMarketPrice;
                 } catch (e) {}
             }
-            return null; // ถ้าดึงไม่ได้
+            return null;
         }
 
         async function fetchUsdThbRate() {
@@ -275,7 +278,7 @@
             let analysisData = [];
 
             const tbody = document.getElementById('portfolio-body');
-            tbody.innerHTML = ''; // เคลียร์ตารางเดิม
+            tbody.innerHTML = ''; 
 
             const symbols = Object.keys(holdings);
             
@@ -287,19 +290,15 @@
                 return;
             }
 
-            // ดึงราคาทุกตัว
             for (const symbol of symbols) {
                 const isThaiStock = symbol.endsWith('.BK');
                 let price = await fetchStockPrice(symbol);
-                
-                // ถ้าดึงไม่ได้ ให้ใช้ราคาที่เคยจำไว้ (ถ้ามี) หรือ 0
                 if (!price) price = marketData[symbol] || 0;
-                marketData[symbol] = price; // จำราคาล่าสุดไว้
+                marketData[symbol] = price;
 
                 const data = holdings[symbol];
                 totalCost += data.costThb;
                 
-                // คำนวณมูลค่า (หุ้นไทยไม่ต้องคูณค่าเงิน, หุ้นนอกต้องคูณ USDTHB)
                 let currentValThb = 0;
                 let priceDisplay = '';
                 
@@ -316,7 +315,6 @@
                 const plThb = currentValThb - data.costThb;
                 const plPct = (plThb / data.costThb) * 100;
 
-                // เก็บข้อมูลให้ AI วิเคราะห์
                 analysisData.push({
                     symbol: symbol,
                     value: currentValThb,
@@ -324,7 +322,6 @@
                     isThai: isThaiStock
                 });
 
-                // สร้างแถวตาราง
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${symbol}</strong></td>
@@ -366,35 +363,36 @@
             pctEl.className = pl >= 0 ? 'card-subtext profit-pos' : 'card-subtext profit-neg';
         }
 
-        // ระบบ AI แนะนำ
+        // ระบบ AI แนะนำหุ้นตัวต่อไป (รวมทั้งหุ้นในพอร์ต และหุ้นแนะนำใหม่)
         function generateRecommendation(stocks, totalPortfolioValue) {
             if (stocks.length === 0) return;
 
-            // หุ้นที่ติดลบหนักที่สุด (เพื่อเฉลี่ยต้นทุน)
+            // ค้นหาหุ้นในพอร์ตที่ติดลบมากที่สุด เพื่อแนะนำให้ถัวเฉลี่ย
             let worstPerformer = stocks.reduce((min, stock) => stock.plPct < min.plPct ? stock : min, stocks[0]);
             
-            // หุ้นที่มีสัดส่วนน้อยที่สุด (เพื่อ Rebalance)
-            let lowestWeight = stocks.reduce((min, stock) => stock.value < min.value ? stock : min, stocks[0]);
+            // สุ่มเลือกหุ้นทางเลือกใหม่ที่ยังไม่มีในพอร์ต เพื่อกระจายความเสี่ยง (Diversification)
+            let existingSymbols = stocks.map(s => s.symbol);
+            let availableNewStocks = candidateStocks.filter(s => !existingSymbols.includes(s.symbol));
+            let recommendedNewStock = availableNewStocks.length > 0 ? availableNewStocks[Math.floor(Math.random() * availableNewStocks.length)] : null;
 
             let html = '';
 
-            // ตรรกะการแนะนำ
             if (worstPerformer.plPct < -5) {
-                html += `กลยุทธ์ <strong>Average Down (ถัวเฉลี่ยลดต้นทุน)</strong>:<br>`;
-                html += `ขณะนี้ <span class="highlight-stock">${worstPerformer.symbol}</span> ปรับฐานลงมา (${worstPerformer.plPct.toFixed(2)}%) 
-                แนะนำให้แบ่งเงิน 1,000 บาทเข้าซื้อเพื่อสะสมในราคาถูกและดึงต้นทุนเฉลี่ยให้ต่ำลง`;
-            } else {
-                html += `กลยุทธ์ <strong>Portfolio Rebalancing (ปรับสมดุล)</strong>:<br>`;
-                html += `พอร์ตของคุณมีกำไร/ทรงตัวได้ดี แนะนำให้นำเงิน 1,000 บาท ซื้อ <span class="highlight-stock">${lowestWeight.symbol}</span> 
-                เนื่องจากปัจจุบันมีสัดส่วนมูลค่าน้อยที่สุดในพอร์ต เพื่อรักษาสมดุลความเสี่ยงระยะยาว`;
+                html += `🎯 <strong>แนวทางที่ 1 (แนะนำหลัก): ถัวเฉลี่ยลดต้นทุน</strong><br>`;
+                html += `เนื่องจาก <span class="highlight-stock">${worstPerformer.symbol}</span> กำลังปรับฐาน (${worstPerformer.plPct.toFixed(2)}%) แนะนำให้ใช้เงิน 1,000 บาทงวดนี้ซื้อสะสมเพิ่มเพื่อลดต้นทุนเฉลี่ย<br><br>`;
             }
 
-            html += `<br><br><span style="font-size:11px; color:#94a3b8;">*คำแนะนำนี้คำนวณจากสัดส่วนและต้นทุนของหุ้นในพอร์ตปัจจุบันเท่านั้น ไม่ใช่คำแนะนำให้ซื้อขายตามสภาวะตลาดรวม</span>`;
-            
+            if (recommendedNewStock) {
+                html += `🌐 <strong>แนวทางที่ 2 (แนะนำเพิ่มความหลากหลาย): ขยายพอร์ตสู่หุ้นใหม่</strong><br>`;
+                html += `หากต้องการกระจายความเสี่ยงออกนอกกลุ่มเทคโนโลยี AI แนะนำให้เริ่มเก็บเงิน 1,000 บาทในหุ้น <span class="highlight-stock">${recommendedNewStock.symbol}</span> (${recommendedNewStock.name})<br>`;
+                html += `<span style="font-size: 11px; color: #94a3b8;">เหตุผล: ${recommendedNewStock.note}</span>`;
+            } else {
+                html += `⚖️ <strong>แนวทางพอร์ตสมดุล:</strong> พอร์ตของคุณมีการกระจายที่ดีแล้ว สามารถเลือกซื้อหุ้นตัวที่มีสัดส่วนมูลค่าน้อยที่สุดในตารางเพื่อรักษาสมดุลครับ`;
+            }
+
             document.getElementById('ai-recommendation').innerHTML = html;
         }
 
-        // รันครั้งแรก
         updateDashboard();
         setInterval(updateDashboard, 60000);
     </script>
