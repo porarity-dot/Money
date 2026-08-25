@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Sarabun', 'Helvetica Neue', Arial, sans-serif;
-            background-color: #0b0f19;
+            background-color: #0f172a;
             color: #f8fafc;
             line-height: 1.6;
             padding: 30px 20px;
@@ -26,89 +26,23 @@
             margin: 0 auto;
         }
 
-        /* Redesigned Header Section */
-        header.hero-header {
-            position: relative;
+        header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 40px 20px 30px;
-            background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
-            border-bottom: 1px solid rgba(51, 65, 85, 0.6);
-            border-radius: 20px;
-            overflow: hidden;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #1e293b;
         }
 
-        header.hero-header::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            height: 100px;
-            background: #38bdf8;
-            filter: blur(90px);
-            opacity: 0.3;
-            pointer-events: none;
-        }
-
-        .header-title-container {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .live-pulse-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #38bdf8;
-            border-radius: 50%;
-            box-shadow: 0 0 12px #38bdf8;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
-            }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 10px rgba(56, 189, 248, 0);
-            }
-            100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
-            }
-        }
-
-        h1.hero-title {
-            font-size: 32px;
+        h1 {
+            font-size: 26px;
             font-weight: 700;
-            background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .hero-subtitle-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            backdrop-filter: blur(10px);
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-size: 13.5px;
-            color: #cbd5e1;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .hero-subtitle-badge strong {
             color: #38bdf8;
-            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            font-size: 14px;
+            color: #94a3b8;
         }
 
         .summary-grid {
@@ -251,19 +185,9 @@
 <body>
 
     <div class="container">
-        <!-- New Designed Header -->
-        <header class="hero-header">
-            <div class="header-title-container">
-                <span class="live-pulse-dot"></span>
-                <h1 class="hero-title">ระบบติดตามผลตอบแทนการลงทุนเรียลไทม์</h1>
-            </div>
-            <div>
-                <div class="hero-subtitle-badge">
-                    <strong>NVDA & GOOGL Portfolio</strong>
-                    <span>|</span>
-                    <span>ดึงราคาหุ้นและอัตราแลกเปลี่ยนอัปเดตสดอัตโนมัติ</span>
-                </div>
-            </div>
+        <header>
+            <h1>ระบบติดตามผลตอบแทนการลงทุนเรียลไทม์</h1>
+            <p class="subtitle">NVDA & GOOGL Portfolio | ดึงราคาหุ้นและอัตราแลกเปลี่ยนอัปเดตสดอัตโนมัติ</p>
         </header>
 
         <!-- Top Summary Cards -->
@@ -345,6 +269,7 @@
 
         const totalCostThb = holdings.NVDA.costThb + holdings.GOOGL.costThb;
 
+        // ดึงราคาหุ้นสากล
         async function fetchSinglePrice(symbol) {
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
@@ -354,25 +279,28 @@
             return parsed.chart.result[0].meta.regularMarketPrice;
         }
 
+        // ดึงอัตราแลกเปลี่ยน USD/THB ปัจจุบันโดยตรง
         async function fetchUsdThbRate() {
             try {
+                // ดึงราคาจาก API อัตราแลกเปลี่ยนระดับสากล
                 const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
                 const data = await res.json();
                 if (data && data.rates && data.rates.THB) {
                     return data.rates.THB;
                 }
             } catch (e) {
-                console.warn("ไม่สามารถดึงจาก ExchangeRate-API ได้", e);
+                console.warn("ไม่สามารถดึงจาก ExchangeRate-API ได้ ใช้ช่องทางที่สอง...", e);
             }
 
             try {
+                // ช่องทางสำรอง: Frankfurter API (ไม่มีจำกัด CORS)
                 const res2 = await fetch('https://api.frankfurter.app/latest?from=USD&to=THB');
                 const data2 = await res2.json();
                 if (data2 && data2.rates && data2.rates.THB) {
                     return data2.rates.THB;
                 }
             } catch (e) {
-                console.warn("ไม่สามารถดึงอัตราแลกเปลี่ยนได้", e);
+                console.warn("ไม่สามารถดึงอัตราแลกเปลี่ยนสดได้", e);
             }
 
             throw new Error("Unable to fetch USD/THB rate");
@@ -383,35 +311,43 @@
                 document.getElementById('update-status').innerText = '● กำลังอัปเดตราคา...';
                 document.getElementById('update-status').style.color = '#38bdf8';
 
+                // ดึงข้อมูลราคาและอัตราแลกเปลี่ยนพร้อมกัน
                 const [nvdaPrice, googlPrice, usdThbRate] = await Promise.all([
                     fetchSinglePrice('NVDA'),
                     fetchSinglePrice('GOOGL'),
                     fetchUsdThbRate()
                 ]);
 
+                // แสดงผลค่าเงิน USD/THB ล่าสุด
                 document.getElementById('fx-rate-display').innerText = `฿${usdThbRate.toFixed(2)}`;
                 document.getElementById('usd-thb-subtext').innerText = `อัตราแลกเปลี่ยนสด: ฿${usdThbRate.toFixed(2)} / $1 USD`;
 
+                // คำนวณ NVDA
                 const nvdaValThb = holdings.NVDA.shares * nvdaPrice * usdThbRate;
                 const nvdaPlThb = nvdaValThb - holdings.NVDA.costThb;
                 const nvdaPlPct = (nvdaPlThb / holdings.NVDA.costThb) * 100;
 
+                // คำนวณ GOOGL
                 const googlValThb = holdings.GOOGL.shares * googlPrice * usdThbRate;
                 const googlPlThb = googlValThb - holdings.GOOGL.costThb;
                 const googlPlPct = (googlPlThb / holdings.GOOGL.costThb) * 100;
 
+                // คำนวณ พอร์ตรวม
                 const totalValThb = nvdaValThb + googlValThb;
                 const totalPlThb = totalValThb - totalCostThb;
                 const totalPlPct = (totalPlThb / totalCostThb) * 100;
 
+                // แสดงผล NVDA
                 document.getElementById('price-nvda').innerText = `$${nvdaPrice.toFixed(2)}`;
                 document.getElementById('val-nvda').innerText = `฿${nvdaValThb.toFixed(2)}`;
                 renderProfitLoss('pl-nvda', 'pl-pct-nvda', nvdaPlThb, nvdaPlPct);
 
+                // แสดงผล GOOGL
                 document.getElementById('price-googl').innerText = `$${googlPrice.toFixed(2)}`;
                 document.getElementById('val-googl').innerText = `฿${googlValThb.toFixed(2)}`;
                 renderProfitLoss('pl-googl', 'pl-pct-googl', googlPlThb, googlPlPct);
 
+                // แสดงผล พอร์ตรวม
                 document.getElementById('total-portfolio-value').innerText = `฿${totalValThb.toFixed(2)}`;
                 const totalPlElem = document.getElementById('total-profit-loss');
                 const totalPlPctElem = document.getElementById('total-profit-percent');
