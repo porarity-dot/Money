@@ -200,7 +200,7 @@
             <div class="card">
                 <div class="card-title">อัตราแลกเปลี่ยนปัจจุบัน</div>
                 <div class="card-value" id="fx-rate-display" style="color: #f59e0b;"><span class="loading">กำลังดึงข้อมูล...</span></div>
-                <div class="card-subtext">อ้างอิงตลาดโลก (ใกล้เคียง Dime!)</div>
+                <div class="card-subtext">อ้างอิงอัตราแลกเปลี่ยนสด (Interbank)</div>
             </div>
             <div class="card">
                 <div class="card-title">มูลค่าพอร์ตปัจจุบัน</div>
@@ -269,7 +269,7 @@
 
         const totalCostThb = holdings.NVDA.costThb + holdings.GOOGL.costThb;
 
-        // ฟังก์ชันดึงราคาหุ้นจาก Yahoo Finance
+        // ดึงราคาหุ้นสากล
         async function fetchSinglePrice(symbol) {
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
@@ -279,23 +279,31 @@
             return parsed.chart.result[0].meta.regularMarketPrice;
         }
 
-        // ฟังก์ชันดึงค่าเงิน USD/THB สดจาก Exchange Rate API
+        // ดึงอัตราแลกเปลี่ยน USD/THB ปัจจุบันโดยตรง
         async function fetchUsdThbRate() {
             try {
-                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                // ดึงราคาจาก API อัตราแลกเปลี่ยนระดับสากล
+                const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
                 const data = await res.json();
                 if (data && data.rates && data.rates.THB) {
                     return data.rates.THB;
                 }
             } catch (e) {
-                console.warn("ไม่สามารถดึงค่าเงินจาก Primary API ได้ กำลังใช้สำรอง...", e);
+                console.warn("ไม่สามารถดึงจาก ExchangeRate-API ได้ ใช้ช่องทางที่สอง...", e);
             }
-            // Fallback ใช้ราคาอ้างอิงจาก Yahoo Finance
+
             try {
-                return await fetchSinglePrice('USDTHB=X');
+                // ช่องทางสำรอง: Frankfurter API (ไม่มีจำกัด CORS)
+                const res2 = await fetch('https://api.frankfurter.app/latest?from=USD&to=THB');
+                const data2 = await res2.json();
+                if (data2 && data2.rates && data2.rates.THB) {
+                    return data2.rates.THB;
+                }
             } catch (e) {
-                return 32.80; // ค่าเริ่มต้นสำรอง
+                console.warn("ไม่สามารถดึงอัตราแลกเปลี่ยนสดได้", e);
             }
+
+            throw new Error("Unable to fetch USD/THB rate");
         }
 
         async function fetchPortfolioData() {
@@ -303,16 +311,16 @@
                 document.getElementById('update-status').innerText = '● กำลังอัปเดตราคา...';
                 document.getElementById('update-status').style.color = '#38bdf8';
 
-                // ดึงราคาหุ้นและค่าเงินพร้อมกัน
+                // ดึงข้อมูลราคาและอัตราแลกเปลี่ยนพร้อมกัน
                 const [nvdaPrice, googlPrice, usdThbRate] = await Promise.all([
                     fetchSinglePrice('NVDA'),
                     fetchSinglePrice('GOOGL'),
                     fetchUsdThbRate()
                 ]);
 
-                // แสดงผลค่าเงิน USD/THB ปัจจุบัน
+                // แสดงผลค่าเงิน USD/THB ล่าสุด
                 document.getElementById('fx-rate-display').innerText = `฿${usdThbRate.toFixed(2)}`;
-                document.getElementById('usd-thb-subtext').innerText = `อัตราแลกเปลี่ยน: ฿${usdThbRate.toFixed(2)} / $1 USD`;
+                document.getElementById('usd-thb-subtext').innerText = `อัตราแลกเปลี่ยนสด: ฿${usdThbRate.toFixed(2)} / $1 USD`;
 
                 // คำนวณ NVDA
                 const nvdaValThb = holdings.NVDA.shares * nvdaPrice * usdThbRate;
@@ -387,7 +395,7 @@
         }
 
         fetchPortfolioData();
-        setInterval(fetchPortfolioData, 30000); // อัปเดตทุก 30 วินาที
+        setInterval(fetchPortfolioData, 30000);
     </script>
 </body>
 </html>
