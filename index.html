@@ -47,7 +47,7 @@
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 30px;
         }
@@ -187,7 +187,7 @@
     <div class="container">
         <header>
             <h1>ระบบติดตามผลตอบแทนการลงทุนเรียลไทม์</h1>
-            <p class="subtitle">NVDA & GOOGL Portfolio | ดึงราคาอัปเดตสดจากตลาดหุ้นสหรัฐฯ อัตโนมัติ</p>
+            <p class="subtitle">NVDA & GOOGL Portfolio | ดึงราคาหุ้นและอัตราแลกเปลี่ยนอัปเดตสดอัตโนมัติ</p>
         </header>
 
         <!-- Top Summary Cards -->
@@ -198,13 +198,18 @@
                 <div class="card-subtext">หุ้นละ 499.96 บาท ($15.05)</div>
             </div>
             <div class="card">
-                <div class="card-title">มูลค่าพอร์ตปัจจุบัน (THB)</div>
-                <div class="card-value" id="total-portfolio-value" style="color: #38bdf8;"><span class="loading">กำลังโหลด...</span></div>
-                <div class="card-subtext" id="usd-thb-rate">อัตราแลกเปลี่ยน: ...</div>
+                <div class="card-title">อัตราแลกเปลี่ยนปัจจุบัน</div>
+                <div class="card-value" id="fx-rate-display" style="color: #f59e0b;"><span class="loading">กำลังดึงข้อมูล...</span></div>
+                <div class="card-subtext">อ้างอิงตลาดโลก (ใกล้เคียง Dime!)</div>
+            </div>
+            <div class="card">
+                <div class="card-title">มูลค่าพอร์ตปัจจุบัน</div>
+                <div class="card-value" id="total-portfolio-value" style="color: #38bdf8;"><span class="loading">กำลังคำนวณ...</span></div>
+                <div class="card-subtext" id="usd-thb-subtext">คำนวณจากราคาเรียลไทม์</div>
             </div>
             <div class="card">
                 <div class="card-title">กำไร/ขาดทุน รวม</div>
-                <div class="card-value" id="total-profit-loss"><span class="loading">กำลังโหลด...</span></div>
+                <div class="card-value" id="total-profit-loss"><span class="loading">กำลังคำนวณ...</span></div>
                 <div class="card-subtext" id="total-profit-percent">...</div>
             </div>
         </div>
@@ -212,7 +217,7 @@
         <!-- Realtime Holdings Table -->
         <div class="section-title">
             <span>รายละเอียดการถือครองและกำไร/ขาดทุนรายตัว</span>
-            <span class="status-badge" id="update-status">● กำลังดึงราคา...</span>
+            <span class="status-badge" id="update-status">● กำลังดึงข้อมูล...</span>
         </div>
 
         <div class="table-container">
@@ -264,31 +269,50 @@
 
         const totalCostThb = holdings.NVDA.costThb + holdings.GOOGL.costThb;
 
-        // ดึงราคาผ่าน Yahoo Finance API Proxy
+        // ฟังก์ชันดึงราคาหุ้นจาก Yahoo Finance
         async function fetchSinglePrice(symbol) {
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-            
             const res = await fetch(proxyUrl);
             const data = await res.json();
             const parsed = JSON.parse(data.contents);
             return parsed.chart.result[0].meta.regularMarketPrice;
         }
 
-        async function fetchStockPrices() {
+        // ฟังก์ชันดึงค่าเงิน USD/THB สดจาก Exchange Rate API
+        async function fetchUsdThbRate() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                if (data && data.rates && data.rates.THB) {
+                    return data.rates.THB;
+                }
+            } catch (e) {
+                console.warn("ไม่สามารถดึงค่าเงินจาก Primary API ได้ กำลังใช้สำรอง...", e);
+            }
+            // Fallback ใช้ราคาอ้างอิงจาก Yahoo Finance
+            try {
+                return await fetchSinglePrice('USDTHB=X');
+            } catch (e) {
+                return 32.80; // ค่าเริ่มต้นสำรอง
+            }
+        }
+
+        async function fetchPortfolioData() {
             try {
                 document.getElementById('update-status').innerText = '● กำลังอัปเดตราคา...';
                 document.getElementById('update-status').style.color = '#38bdf8';
 
-                // ดึงราคา NVDA และ GOOGL พร้อมกัน
-                const [nvdaPrice, googlPrice] = await Promise.all([
+                // ดึงราคาหุ้นและค่าเงินพร้อมกัน
+                const [nvdaPrice, googlPrice, usdThbRate] = await Promise.all([
                     fetchSinglePrice('NVDA'),
-                    fetchSinglePrice('GOOGL')
+                    fetchSinglePrice('GOOGL'),
+                    fetchUsdThbRate()
                 ]);
 
-                // อัตราแลกเปลี่ยน THB/USD ประเมินปัจจุบัน
-                const usdThbRate = 34.50; 
-                document.getElementById('usd-thb-rate').innerText = `อัตราแลกเปลี่ยนอ้างอิง: ฿${usdThbRate.toFixed(2)} / USD`;
+                // แสดงผลค่าเงิน USD/THB ปัจจุบัน
+                document.getElementById('fx-rate-display').innerText = `฿${usdThbRate.toFixed(2)}`;
+                document.getElementById('usd-thb-subtext').innerText = `อัตราแลกเปลี่ยน: ฿${usdThbRate.toFixed(2)} / $1 USD`;
 
                 // คำนวณ NVDA
                 const nvdaValThb = holdings.NVDA.shares * nvdaPrice * usdThbRate;
@@ -339,7 +363,7 @@
                 document.getElementById('last-updated').innerText = `อัปเดตข้อมูลล่าสุด: ${now.toLocaleTimeString('th-TH')} (${now.toLocaleDateString('th-TH')})`;
 
             } catch (error) {
-                console.error("Error fetching stock prices:", error);
+                console.error("Error fetching portfolio data:", error);
                 document.getElementById('update-status').innerText = '● ไม่สามารถดึงราคาล่าสุดได้';
                 document.getElementById('update-status').style.color = '#f87171';
             }
@@ -362,8 +386,8 @@
             }
         }
 
-        fetchStockPrices();
-        setInterval(fetchStockPrices, 30000);
+        fetchPortfolioData();
+        setInterval(fetchPortfolioData, 30000); // อัปเดตทุก 30 วินาที
     </script>
 </body>
 </html>
