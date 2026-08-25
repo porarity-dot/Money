@@ -188,16 +188,31 @@
     </div>
 
     <script>
-        const defaultHoldings = {
+        // ข้อมูลเริ่มต้นแบบสะอาด (ป้องกันข้อมุลเบิ้ลซ้ำ)
+        const cleanDefaultHoldings = {
             'NVDA': { shares: 0.0668888, costThb: 499.96 },
             'GOOGL': { shares: 0.0435436, costThb: 499.96 }
         };
         
-        let holdings = JSON.parse(localStorage.getItem('mySmartPortfolio')) || defaultHoldings;
+        // เช็คว่าถ้าข้อมูลในเครื่องพังหรือเบิ้ล ให้รีเซ็ตกลับเป็นค่าสะอาดทันที
+        let savedData = JSON.parse(localStorage.getItem('mySmartPortfolio'));
+        let holdings = savedData && !savedData.length ? savedData : cleanDefaultHoldings;
+        
+        // บันทึกค่าที่สะอาดกลับลง LocalStorage
+        localStorage.setItem('mySmartPortfolio', JSON.stringify(holdings));
+
+        // ราคาสำรองฉุกเฉิน (Fallback Price) ป้องกันกรณีเน็ตหลุดหรือ Proxy ล่ม
+        const fallbackPrices = {
+            'NVDA': 130.00,
+            'GOOGL': 175.00,
+            'MSFT': 420.00,
+            'AAPL': 220.00,
+            'AMZN': 185.00
+        };
+
         let marketData = {}; 
         let usdThbRate = 34.50;
 
-        // คลังหุ้นแนะนำเพิ่มเติม (หุ้นนอก / หุ้นไทยพื้นฐานดี)
         const candidateStocks = [
             { symbol: 'MSFT', name: 'Microsoft (สหรัฐฯ)', type: 'Growth / Cloud', note: 'ผู้นำด้าน Cloud และ AI Enterprise ความมั่นคงสูง' },
             { symbol: 'AAPL', name: 'Apple (สหรัฐฯ)', type: 'Consumer Tech', note: 'แบรนด์แข็งแกร่ง กระแสเงินสดมหาศาล' },
@@ -250,20 +265,21 @@
                 try {
                     const res = await fetch(proxy);
                     const data = await res.json();
-                    return data.chart.result[0].meta.regularMarketPrice;
+                    const price = data.chart.result[0].meta.regularMarketPrice;
+                    if (price) return price;
                 } catch (e) {}
             }
-            return null;
+            // ถ้าดึงไม่ได้ ให้ใช้ราคาสำรองฉุกเฉิน
+            return fallbackPrices[symbol] || null;
         }
 
         async function fetchUsdThbRate() {
             try {
                 const res = await fetch('https://open.er-api.com/v6/latest/USD');
                 const data = await res.json();
-                return data.rates.THB;
-            } catch (e) {
-                return 34.50;
-            }
+                if (data && data.rates && data.rates.THB) return data.rates.THB;
+            } catch (e) {}
+            return 34.50; // ค่าสำรองมาตรฐาน
         }
 
         async function updateDashboard() {
@@ -293,7 +309,7 @@
             for (const symbol of symbols) {
                 const isThaiStock = symbol.endsWith('.BK');
                 let price = await fetchStockPrice(symbol);
-                if (!price) price = marketData[symbol] || 0;
+                if (!price) price = marketData[symbol] || fallbackPrices[symbol] || 100.00;
                 marketData[symbol] = price;
 
                 const data = holdings[symbol];
@@ -313,7 +329,7 @@
                 totalValue += currentValThb;
 
                 const plThb = currentValThb - data.costThb;
-                const plPct = (plThb / data.costThb) * 100;
+                const plPct = data.costThb > 0 ? (plThb / data.costThb) * 100 : 0;
 
                 analysisData.push({
                     symbol: symbol,
@@ -341,7 +357,7 @@
             renderSummary(totalCost, totalValue);
             generateRecommendation(analysisData, totalValue);
 
-            document.getElementById('update-status').innerText = 'สถานะ: ข้อมูลล่าสุดตรงกับตลาด';
+            document.getElementById('update-status').innerText = 'สถานะ: ข้อมูลล่าสุดพร้อมใช้งาน';
             document.getElementById('update-status').style.color = '#4ade80';
             document.getElementById('last-updated').innerText = new Date().toLocaleTimeString('th-TH');
         }
@@ -363,14 +379,10 @@
             pctEl.className = pl >= 0 ? 'card-subtext profit-pos' : 'card-subtext profit-neg';
         }
 
-        // ระบบ AI แนะนำหุ้นตัวต่อไป (รวมทั้งหุ้นในพอร์ต และหุ้นแนะนำใหม่)
         function generateRecommendation(stocks, totalPortfolioValue) {
             if (stocks.length === 0) return;
 
-            // ค้นหาหุ้นในพอร์ตที่ติดลบมากที่สุด เพื่อแนะนำให้ถัวเฉลี่ย
             let worstPerformer = stocks.reduce((min, stock) => stock.plPct < min.plPct ? stock : min, stocks[0]);
-            
-            // สุ่มเลือกหุ้นทางเลือกใหม่ที่ยังไม่มีในพอร์ต เพื่อกระจายความเสี่ยง (Diversification)
             let existingSymbols = stocks.map(s => s.symbol);
             let availableNewStocks = candidateStocks.filter(s => !existingSymbols.includes(s.symbol));
             let recommendedNewStock = availableNewStocks.length > 0 ? availableNewStocks[Math.floor(Math.random() * availableNewStocks.length)] : null;
@@ -384,10 +396,10 @@
 
             if (recommendedNewStock) {
                 html += `🌐 <strong>แนวทางที่ 2 (แนะนำเพิ่มความหลากหลาย): ขยายพอร์ตสู่หุ้นใหม่</strong><br>`;
-                html += `หากต้องการกระจายความเสี่ยงออกนอกกลุ่มเทคโนโลยี AI แนะนำให้เริ่มเก็บเงิน 1,000 บาทในหุ้น <span class="highlight-stock">${recommendedNewStock.symbol}</span> (${recommendedNewStock.name})<br>`;
+                html += `หากต้องการกระจายความเสี่ยง แนะนำให้เริ่มเก็บเงิน 1,000 บาทในหุ้น <span class="highlight-stock">${recommendedNewStock.symbol}</span> (${recommendedNewStock.name})<br>`;
                 html += `<span style="font-size: 11px; color: #94a3b8;">เหตุผล: ${recommendedNewStock.note}</span>`;
             } else {
-                html += `⚖️ <strong>แนวทางพอร์ตสมดุล:</strong> พอร์ตของคุณมีการกระจายที่ดีแล้ว สามารถเลือกซื้อหุ้นตัวที่มีสัดส่วนมูลค่าน้อยที่สุดในตารางเพื่อรักษาสมดุลครับ`;
+                html += `⚖️ <strong>แนวทางพอร์ตสมดุล:</strong> พอร์ตของคุณมีการกระจายที่ดีแล้ว สามารถเลือกซื้อหุ้นตัวที่มีสัดส่วนมูลค่าน้อยที่สุดเพื่อรักษาสมดุลครับ`;
             }
 
             document.getElementById('ai-recommendation').innerHTML = html;
